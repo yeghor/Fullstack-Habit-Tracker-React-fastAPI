@@ -24,15 +24,16 @@ async def register(
     
     try:
         password_hash_bytes = password_handling.hash_password(password)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error while hashing password: {e}")
-    #LOGIC WITH DATABASE IN PROGRESS
+    except Exception:
+        raise HTTPException(status_code=500, detail=f"Error while hashing password")
+    
     try:
         user_id = uuid4()
-        jwt_token, expiers_at = jwt_token_handling.generate_jwt(user_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errot while generating JWT token: {e}")
-    #LOGIC WITH JWT DATABASE IN PROGRESS
+        jwt_token, expires_at = jwt_token_handling.generate_jwt(user_id)
+    except Exception:
+        raise HTTPException(status_code=500, detail=f"Errot while generating JWT token")
+    
+    # TODO: Add database logic
 
-    return TokenSchema(token=jwt_token, expires_at=str(expiers_at))
+    return TokenSchema(token=jwt_token, expires_at=str(expires_at))
 
