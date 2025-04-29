@@ -1,0 +1,6 @@
+venv/
+__pychache__/
+*.pyc
+*.log
+.vscode/
+db.sqlite3
