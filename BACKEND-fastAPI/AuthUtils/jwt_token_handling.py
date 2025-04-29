@@ -1,17 +1,19 @@
 import jwt
-from consts import JWT_SECRET_KEY_TEMP, EXPIERY_TIME_MINUTES, DATE_FORMAT
+from .consts import JWT_SECRET_KEY_TEMP, EXPIERY_TIME_MINUTES, DATE_FORMAT
 from datetime import datetime, timedelta
 
-def generate_jwt(user_ID) -> str:
+def generate_jwt(user_ID):
+    user_ID = str(user_ID)
     datestamp = datetime.now()
+    expiery_date = (datestamp) + timedelta(minutes=EXPIERY_TIME_MINUTES)
     print(datestamp)
     
     payload = {
         "user_ID": user_ID,
         "issued_at": str(datestamp),
-        "expires": str((datestamp) + timedelta(minutes=EXPIERY_TIME_MINUTES))
+        "expires": str(expiery_date)
     }
-    return jwt.encode(payload, JWT_SECRET_KEY_TEMP, algorithm="HS256")
+    return jwt.encode(payload, JWT_SECRET_KEY_TEMP, algorithm="HS256"), expiery_date
 
 def extract_payload(token) -> dict:
     return jwt.decode(token, JWT_SECRET_KEY_TEMP, algorithms=["HS256"])
