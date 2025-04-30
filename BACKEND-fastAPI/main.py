@@ -8,17 +8,34 @@ import datetime
 from database import engine, session_local
 from models import Base, Users, JWTTable
 from sqlalchemy.orm import Session
+import time
+from apscheduler.schedulers.background import BackgroundScheduler
+
+def update_jwts():
+    db = session_local()
+    try:
+        timestamp = datetime.datetime.now()
+        timestamp_unix = round(timestamp.timestamp())
+        jwts = db.query(JWTTable).filter(JWTTable.expires_at < timestamp_unix)
+        jwts.delete(synchronize_session=False)
+        db.commit()
+    finally:
+        db.close()
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
-#using dicts because my JWTs won't be alive more than 15 minutes. That will also improve app perfomance
-jwts = {
-     
-}
+def periodic_task():
+    print("Periodic task called")
+    update_jwts()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(periodic_task, "interval", seconds=120)
+scheduler.start()
 
 def clear_tables():
     Users.__table__.drop(engine)
+    JWTTable.__table__.drop(engine)
 
 def get_db():
     db = session_local()
@@ -55,7 +72,7 @@ async def register(
         password_hash_bytes = password_handling.hash_password(password)
         password_hash_str = password_hash_bytes.decode("utf-8")
     except Exception:
-        raise HTTPException(status_code=500, detail=f"Error while hashing password")
+        raise HTTPException(status_code=500, detail=f"Error while working hashing password")
     
     #GENERATING JWT TOKEN
     try:
@@ -78,9 +95,14 @@ async def register(
         db.add(user)
         db.commit()
     except Exception:
-        raise HTTPException(status_code=500, detail="Eror while work with db")
+        raise HTTPException(status_code=500, detail="Error while work with db")
     
-    jwts[user_id] = jwt_token 
+    try:
+        jwt_table = JWTTable(jwt_token=jwt_token, expires_at=int(expires_at), user_id=user_id)
+        db.add(jwt_table)
+        db.commit()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error while work with token db")
 
     return TokenSchema(token=jwt_token, expires_at=str(expires_at))
 
@@ -91,6 +113,9 @@ async def login(
     email: Annotated[str, Body(title="Your E-mail")],
     db: Session = Depends(get_db)
     ) -> TokenSchema:
+
+    timestamp = datetime.datetime.now()
+    timestamp_unix = timestamp.timestamp()
 
     if any(char in consts.INVALID_USERNAME_CHARACTERS for char in username):
         raise HTTPException(status_code=400, detail="Username contains invalid characters")
@@ -106,16 +131,19 @@ async def login(
         raise HTTPException(status_code=401, detail="This user doesn't exist")
     
     if not password_handling.check_password(password, potential_user.hashed_password.encode("utf-8")):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    if potential_user.user_id in jwts:
-        payload = jwt_token_handling.extract_payload(token=jwts[potential_user.user_id])
-        return TokenSchema(token=jwts[potential_user.user_id], expires_at=payload["expires"])
+        raise HTTPException(status_code=409, detail="Invalid credentials")
 
     try:
+        potential_jwt: JWTTable = db.query(JWTTable).filter(JWTTable.user_id == potential_user.user_id).first()
+        if potential_jwt and potential_jwt.expires_at > timestamp_unix:
+            return TokenSchema(token=potential_jwt.jwt_token, expires_at=str(potential_jwt.expires_at))
+        
         jwt_token, expires_at = jwt_token_handling.generate_jwt(user_ID=potential_user.user_id)
-        jwts[potential_user.user_id] = jwt_token
-        return TokenSchema(token=jwt_token, expires_at=expires_at)
+
+        jwt_to_table = JWTTable(user_id=potential_user.user_id, jwt_token=jwt_token, expires_at=expires_at)
+        db.add(jwt_to_table)
+        db.commit()
+
+        return TokenSchema(token=jwt_token, expires_at=str(expires_at))
     except Exception:
-        raise HTTPException(status_code=500, detail="Error while generating JWT token")
-    
+        raise HTTPException(status_code=500, detail="Error while generating jwt token")

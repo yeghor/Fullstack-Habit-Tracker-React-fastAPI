@@ -8,13 +8,13 @@ def generate_jwt(user_ID):
     datestamp = datetime.now()
     expiry_date = (datestamp + timedelta(minutes=EXPIERY_TIME_MINUTES))
     
-    expiry_date_unix_str = str(round(expiry_date.timestamp()))
+    expiry_date_unix = round(expiry_date.timestamp())
     payload = {
         "user_ID": user_ID,
         "issued_at": str(round(datestamp.timestamp())),
-        "expires": expiry_date_unix_str
+        "expires": str(expiry_date_unix)
     }
-    return jwt.encode(payload, JWT_SECRET_KEY_TEMP, algorithm="HS256"), expiry_date_unix_str
+    return jwt.encode(payload, JWT_SECRET_KEY_TEMP, algorithm="HS256"), expiry_date_unix
 
 def extract_payload(token) -> dict:
     try:

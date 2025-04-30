@@ -16,5 +16,6 @@ class Users(Base):
 class JWTTable(Base):
     __tablename__ = "jwttable"
 
+    user_id = Column(String, primary_key=True)
     jwt_token = Column(String, primary_key=True, index=True)
     expires_at = Column(Integer)

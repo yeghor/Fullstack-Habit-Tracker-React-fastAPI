@@ -4,3 +4,4 @@ __pychache__/
 *.log
 .vscode/
 db.sqlite3
+database.db
