@@ -7,10 +7,16 @@ class HabitSchema(BaseModel):
     reset_at: str
     date_created: str
 
+class UserSchema(BaseModel):
+    user_id: str
+    username: str
+    joined_at: str
+    email: str
+
 class HabitCompletionSchema(BaseModel):
     habit_name: str
     completion_date: str
 
 class TokenSchema(BaseModel):
     token: str
-    expires_at: str
+    expires_at: int

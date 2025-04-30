@@ -3,14 +3,14 @@ import jwt.exceptions
 from .consts import JWT_SECRET_KEY_TEMP, EXPIERY_TIME_MINUTES, DATE_FORMAT
 from datetime import datetime, timedelta
 
-def generate_jwt(user_ID):
-    user_ID = str(user_ID)
+def generate_jwt(user_id):
+    user_id = str(user_id)
     datestamp = datetime.now()
     expiry_date = (datestamp + timedelta(minutes=EXPIERY_TIME_MINUTES))
     
     expiry_date_unix = round(expiry_date.timestamp())
     payload = {
-        "user_ID": user_ID,
+        "user_id": user_id,
         "issued_at": str(round(datestamp.timestamp())),
         "expires": str(expiry_date_unix)
     }
