@@ -17,8 +17,6 @@ class UserSchema(BaseModel):
     joined_at: str
     email: str
 
-
-
 class TokenSchema(BaseModel):
     token: str
     expires_at: int
