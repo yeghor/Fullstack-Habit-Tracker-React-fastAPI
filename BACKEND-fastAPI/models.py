@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, JSON
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -29,9 +29,10 @@ class Habits(Base):
     habit_id = Column(String, primary_key=True, index=True)
     habit_name = Column(String)
     habit_desc = Column(String)
-    owner_id = Column(String, ForeignKey("users.user_id"))
-    reset_at = Column(Integer)
+    user_id = Column(String, ForeignKey("users.user_id"))
     date_created = Column(Integer)
+    completed = Column(Boolean, default=False)
+    reset_at = Column(JSON)
 
     completions = relationship("HabitCompletions", back_populates="habit")
     owner = relationship("Users", back_populates="habits")
@@ -42,7 +43,7 @@ class HabitCompletions(Base):
     habit_id = Column(String,  ForeignKey("habits.habit_id"), primary_key=True)
     habit_name = Column(String)
     user_id = Column(String, ForeignKey("users.user_id"), primary_key=True)
-    completion_date = Column(Integer)
+    completed_at = Column(Integer)
 
     owner = relationship("Users", back_populates="completions")
     habit = relationship("Habits", back_populates="completions")

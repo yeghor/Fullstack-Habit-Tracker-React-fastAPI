@@ -3,3 +3,9 @@
   "password": "password",
   "email": "email@gmail.com"
 }
+
+{
+  "username": "test_user_3",
+  "password": "password",
+  "email": "emai3@gmail.com"
+}
