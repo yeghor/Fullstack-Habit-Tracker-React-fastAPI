@@ -1,7 +1,8 @@
-from models import Habits
+from models import Habits, JWTTable
 from database import session_local
 from sqlalchemy.orm import Session
 import datetime
+
 def reset_all_habits(db: Session) -> None:
     habits = db.query(Habits).filter(Habits.completed == True)
     for habit in habits:
