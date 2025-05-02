@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import os
 from habit_router import habit_router
 from periodic_tasks import update_jwts, reset_all_habits, reset_potential_habit
-
 load_dotenv()
 
 def periodic_task():

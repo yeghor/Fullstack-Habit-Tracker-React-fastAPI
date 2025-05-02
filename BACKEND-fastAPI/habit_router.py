@@ -31,7 +31,6 @@ async def add_habit(
     reset_at_final = {}
     for reset_time in reset_at:
         reset_at_final[reset_time] = False
-    print(reset_at_final)
 
     user_id = payload["user_id"]
     habit_id = str(uuid4())
