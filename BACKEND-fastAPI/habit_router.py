@@ -64,8 +64,8 @@ async def get_habits(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ):
-    return user.user_id
-
+    user = db.merge(user)
+    return user.habits
 
 @habit_router.post("/habit_completion")
 async def habit_completion(
