@@ -4,6 +4,11 @@ from fastapi import HTTPException
 import re
 from dotenv import load_dotenv
 import os
+from models import Users
+from sqlalchemy.orm import Session
+from GeneratingAuthUtils.jwt_token_handling import extract_payload
+from fastapi import Header
+
 load_dotenv()
 
 def authorize_token(token: str) -> None:
@@ -27,3 +32,20 @@ def verify_credentials(username, email):
         raise HTTPException(status_code=400, detail="Username contains invalid characters")
     if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
         raise HTTPException(status_code=400, detail="Invalid Email")
+
+def get_user_depends(token=Header(title="Authorization token")) -> Users:
+    db = session_local()
+    try:
+        token = prepare_authorization_token(token)
+        authorize_token(token)
+        try:
+            payload = extract_payload(token)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid token")
+        try:
+            user = db.query(Users).filter(Users.user_id == payload["user_id"]).first()
+            return user
+        except Exception:
+            raise HTTPException(status_code=500, detail="Error while trying to find user")
+    finally:
+        db.close()

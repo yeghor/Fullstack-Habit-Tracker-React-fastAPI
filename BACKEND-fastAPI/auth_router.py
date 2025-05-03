@@ -8,6 +8,7 @@ from models import Users, JWTTable
 from sqlalchemy.orm import Session
 from authorization_utils import prepare_authorization_token, authorize_token, verify_credentials
 from db_utils import get_db
+from authorization_utils import get_user_depends
 
 auth_router = APIRouter()
 
@@ -130,20 +131,9 @@ async def loogut(
 
 @auth_router.get("/get_user_profile")
 async def get_user_profile(
-    authorization: str = Annotated[str, Header(title="Temprorary authorization token")],
+    user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ) -> UserSchema:
-    token = prepare_authorization_token(authorization=authorization)
-    authorize_token(token)
-
-    try:
-        payload = jwt_token_handling.extract_payload(token=token)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid token")
-    
-    user = db.query(Users).filter(Users.user_id == payload["user_id"]).first()
-    if not user:
-        raise HTTPException(status_code=500, detail="No user found by given token. Please, contact application support")
     
     user_mapping = {
         "user_id": user.user_id,

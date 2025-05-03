@@ -5,7 +5,7 @@ from uuid import uuid4
 import datetime
 from models import Users, JWTTable, Habits, HabitCompletions
 from sqlalchemy.orm import Session
-from authorization_utils import authorize_token, prepare_authorization_token
+from authorization_utils import authorize_token, prepare_authorization_token, get_user_depends
 from db_utils import get_db
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
 from ValidationUtils.validate_entries import validate_string, validate_reset_time
@@ -21,47 +21,34 @@ load_dotenv()
 XP_AFTER_COMPLETION = os.getenv("XP_AFTER_COMPLETION")
 XP_RANDOM_FACTOR = os.getenv("XP_RANDOM_FACTOR")
 
-def fast_authorize_token(token) -> str:
-    token = prepare_authorization_token(token)
-    authorize_token(token)
-    return token
 
 @habit_router.post("/add_habit")
 async def add_habit(
-    token: Annotated[str, Header(title="Authorization token")],
     habit_name: Annotated[str, Body(title="Habit name", min_length=3)],
     habit_desc: Annotated[str, Body(title="Habit decs", min_length=3)],
     reset_at: Annotated[List[int], Body(title="Resetting time in unix after midnight. SEPARATED BY SPACES")],
+    user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):
     if not validate_string(habit_name) or not validate_string(habit_desc):
         raise HTTPException(status_code=400, detail="Invalid habit name or description")
     if not validate_reset_time(reset_at):
         raise HTTPException(status_code=400, detail="Invalid resetting time")
-
-    token = fast_authorize_token(token=token)
-
-    try:
-        payload = extract_payload(token)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error ocured while extracting payload from token.")
-    
     
     reset_at_final = {}
     for reset_time in reset_at:
         reset_at_final[reset_time] = False
 
-    user_id = payload["user_id"]
     habit_id = str(uuid4())
 
     try:
-        user: Users = db.query(Users).filter(Users.user_id == user_id).first()    
+        user = db.merge(user)
 
         new_habit = Habits(
             habit_id=habit_id,
             habit_name=habit_name,
             habit_desc=habit_desc,
-            user_id=user_id,
+            user_id=user.user_id,
             date_created=datetime.datetime.today(),
             reset_at=reset_at_final,
             owner=user)
@@ -72,21 +59,20 @@ async def add_habit(
     except Exception:
         raise HTTPException(status_code=500, detail="Error while working with db")
     
+@habit_router.get("/get_habits")
+async def get_habits(
+    user: Users = Depends(get_user_depends),
+    db: Session = Depends(get_db)
+):
+    return user.user_id
+
+
 @habit_router.post("/habit_completion")
 async def habit_completion(
-    token: Annotated[str, Header(title="Authorization token")],
     habit_id: Annotated[str, Header(title="Id of habit that need to be marked as completed")],
+    user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ) -> None:
-    
-    token = fast_authorize_token(token=token)
-    
-    try:
-        payload = extract_payload(token=token)
-        user: Users = db.query(Users).filter(Users.user_id == payload["user_id"]).first()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid token")
-    
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
     except Exception:
