@@ -39,10 +39,11 @@ class Habits(Base):
 
 class HabitCompletions(Base):
     __tablename__ = "habitcompletions"
-
-    habit_id = Column(String,  ForeignKey("habits.habit_id"), primary_key=True)
+    
+    completion_id = Column(String, primary_key=True)
+    habit_id = Column(String,  ForeignKey("habits.habit_id"))
     habit_name = Column(String)
-    user_id = Column(String, ForeignKey("users.user_id"), primary_key=True)
+    user_id = Column(String, ForeignKey("users.user_id"))
     completed_at = Column(Integer)
 
     owner = relationship("Users", back_populates="completions")

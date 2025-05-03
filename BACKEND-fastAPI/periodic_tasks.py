@@ -3,7 +3,7 @@ from database import session_local
 from sqlalchemy.orm import Session
 import datetime
 
-def reset_all_habits(db: Session) -> None:
+def reset_all_habits() -> None:
     db: Session = session_local()
     try:
         habits = db.query(Habits).filter(Habits.completed == True)
@@ -22,7 +22,8 @@ def get_seconds_from_midnight() -> int:
     timestamp_date = datetime.datetime.combine(time=datetime.time(0, 0), date=datetime.datetime.today()).timestamp()
     return round(timestamp_now - timestamp_date)
 
-def reset_potential_habit(db: Session) -> None:
+def reset_potential_habit() -> None:
+    print("Periodic reset_potential habit called")
     db: Session = session_local()
     try:
         habits = db.query(Habits).filter(Habits.completed == True)
@@ -34,7 +35,7 @@ def reset_potential_habit(db: Session) -> None:
 
             required_window = None
             for time, flag in reset_at_sorted.items():
-                if from_midnight_unix > time and not flag:
+                if from_midnight_unix > int(time) and not flag:
                     reset_at_sorted[time] = True
                     required_window = time
             
@@ -50,6 +51,7 @@ def reset_potential_habit(db: Session) -> None:
         db.close()
 
 def update_jwts():
+    print("Periodic update_jwts habit called")
     db = session_local()
     try:
         timestamp = datetime.datetime.now()

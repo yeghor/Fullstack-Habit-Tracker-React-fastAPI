@@ -23,7 +23,7 @@ def prepare_authorization_token(authorization: str) -> str:
     return token
 
 def verify_credentials(username, email):
-    if any(char in os.getenv("INVALID_USERNAME_CHARACTERS") for char in username):
+    if any(char in os.getenv("INVALID_USERNAME_CHARACTERS").split(",") for char in username):
         raise HTTPException(status_code=400, detail="Username contains invalid characters")
     if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
         raise HTTPException(status_code=400, detail="Invalid Email")

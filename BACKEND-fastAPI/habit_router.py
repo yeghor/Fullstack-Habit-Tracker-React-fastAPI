@@ -3,24 +3,43 @@ from typing import Annotated, Dict, List
 from schemas import TokenSchema
 from uuid import uuid4
 import datetime
-from models import Users, JWTTable, Habits
+from models import Users, JWTTable, Habits, HabitCompletions
 from sqlalchemy.orm import Session
 from authorization_utils import authorize_token, prepare_authorization_token
 from db_utils import get_db
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
+from ValidationUtils.validate_entries import validate_string, validate_reset_time
+import datetime
+import os
+from dotenv import load_dotenv
+import random
 
 habit_router = APIRouter()
+load_dotenv()
+
+
+XP_AFTER_COMPLETION = os.getenv("XP_AFTER_COMPLETION")
+XP_RANDOM_FACTOR = os.getenv("XP_RANDOM_FACTOR")
+
+def fast_authorize_token(token) -> str:
+    token = prepare_authorization_token(token)
+    authorize_token(token)
+    return token
 
 @habit_router.post("/add_habit")
 async def add_habit(
-    token: Annotated[str, Body(title="Authorization token")],
+    token: Annotated[str, Header(title="Authorization token")],
     habit_name: Annotated[str, Body(title="Habit name", min_length=3)],
     habit_desc: Annotated[str, Body(title="Habit decs", min_length=3)],
     reset_at: Annotated[List[int], Body(title="Resetting time in unix after midnight. SEPARATED BY SPACES")],
     db: Session = Depends(get_db),
 ):
-    token = prepare_authorization_token(token)
-    authorize_token(token)
+    if not validate_string(habit_name) or not validate_string(habit_desc):
+        raise HTTPException(status_code=400, detail="Invalid habit name or description")
+    if not validate_reset_time(reset_at):
+        raise HTTPException(status_code=400, detail="Invalid resetting time")
+
+    token = fast_authorize_token(token=token)
 
     try:
         payload = extract_payload(token)
@@ -36,8 +55,8 @@ async def add_habit(
     habit_id = str(uuid4())
 
     try:
-        owner: Users = db.query(Users).filter(Users.user_id == user_id).first()    
-    
+        user: Users = db.query(Users).filter(Users.user_id == user_id).first()    
+
         new_habit = Habits(
             habit_id=habit_id,
             habit_name=habit_name,
@@ -45,9 +64,53 @@ async def add_habit(
             user_id=user_id,
             date_created=datetime.datetime.today(),
             reset_at=reset_at_final,
-            owner=owner)
+            owner=user)
 
-        owner.habits.append(new_habit)
+        user.habits.append(new_habit)
+
+        db.commit()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error while working with db")
+    
+@habit_router.post("/habit_completion")
+async def habit_completion(
+    token: Annotated[str, Header(title="Authorization token")],
+    habit_id: Annotated[str, Header(title="Id of habit that need to be marked as completed")],
+    db: Session = Depends(get_db)
+) -> None:
+    
+    token = fast_authorize_token(token=token)
+    
+    try:
+        payload = extract_payload(token=token)
+        user: Users = db.query(Users).filter(Users.user_id == payload["user_id"]).first()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    
+    try:
+        habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
+    except Exception:
+        raise HTTPException(status_code=400, detail="No such habit with this id")
+    
+    try:
+        if habit.completed:
+            raise HTTPException(status_code=400, detail="This habit is allready completed. Wait until it's resetting time")
+
+        HabitCompletion = HabitCompletions(
+            completion_id=str(uuid4()),
+            habit_id=habit.habit_id,
+            habit_name=habit.habit_name,
+            user_id=user.user_id,
+            completed_at=datetime.datetime.today(),
+            owner=user,
+            habit=habit,
+            )
+        user.completions.append(HabitCompletion)
+        habit.completions.append(HabitCompletion)
+
+        user.xp += round(int(XP_AFTER_COMPLETION) * random.uniform(1, int(XP_RANDOM_FACTOR)))
+
+        habit.completed = True
         db.commit()
     except Exception:
         raise HTTPException(status_code=500, detail="Error while working with db")
