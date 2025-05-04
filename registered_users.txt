@@ -2,10 +2,10 @@
   "username": "test_user_1",
   "password": "password",
   "email": "email@gmail.com"
-}
-
+} token = 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTg2NDMxYzEtY2Y2NS00NzdmLWJkMTctYmFhNGEyMWI5ODZlIiwiaXNzdWVkX2F0IjoiMTc0NjM1MjUwNyIsImV4cGlyZXMiOiIxNzQ2MzUzNDA3In0.CKJawV8TK0sApN90TX0Ou8JxVhfAMfbYxZd044CQelU
 {
   "username": "test_user_3",
   "password": "password",
   "email": "emai3@gmail.com"
-}
+} token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZTdlOTAyODEtZWE3Yi00MzFmLTg2MDEtOTk1NTM0NmUyZjgwIiwiaXNzdWVkX2F0IjoiMTc0NjM1MTQ5MiIsImV4cGlyZXMiOiIxNzQ2MzUyMzkyIn0.c7u1AKcl18G_RN3fsnYxpzJQ009bcJ9KDaUTAyStBT0

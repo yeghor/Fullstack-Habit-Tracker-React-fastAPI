@@ -3,6 +3,7 @@ from database import session_local
 from sqlalchemy.orm import Session
 import datetime
 
+
 def reset_all_habits() -> None:
     db: Session = session_local()
     try:
@@ -17,10 +18,14 @@ def reset_all_habits() -> None:
     finally:
         db.close()
 
+
 def get_seconds_from_midnight() -> int:
     timestamp_now = datetime.datetime.now().timestamp()
-    timestamp_date = datetime.datetime.combine(time=datetime.time(0, 0), date=datetime.datetime.today()).timestamp()
+    timestamp_date = datetime.datetime.combine(
+        time=datetime.time(0, 0), date=datetime.datetime.today()
+    ).timestamp()
     return round(timestamp_now - timestamp_date)
+
 
 def reset_potential_habit() -> None:
     print("Periodic reset_potential habit called")
@@ -28,7 +33,7 @@ def reset_potential_habit() -> None:
     try:
         habits = db.query(Habits).filter(Habits.completed == True)
         from_midnight_unix = get_seconds_from_midnight()
-        
+
         for habit in habits:
             reset_at = habit.reset_at
             reset_at_sorted = dict(sorted(reset_at.items()))
@@ -38,17 +43,18 @@ def reset_potential_habit() -> None:
                 if from_midnight_unix > int(time) and not flag:
                     reset_at_sorted[time] = True
                     required_window = time
-            
+
             if not required_window:
                 continue
 
             reset_at_sorted[required_window] = True
             habit.reset_at = reset_at_sorted
             habit.completed = False
-        
+
         db.commit()
     finally:
         db.close()
+
 
 def update_jwts():
     print("Periodic update_jwts habit called")

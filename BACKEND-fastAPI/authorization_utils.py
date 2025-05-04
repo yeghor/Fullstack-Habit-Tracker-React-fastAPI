@@ -11,14 +11,16 @@ from fastapi import Header
 
 load_dotenv()
 
+
 def authorize_token(token: str) -> None:
     db = session_local()
     try:
         token = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
-        if not token: 
+        if not token:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
     finally:
         db.close()
+
 
 def prepare_authorization_token(authorization: str) -> str:
     if not authorization.startswith("Bearer "):
@@ -27,11 +29,17 @@ def prepare_authorization_token(authorization: str) -> str:
     token = authorization.replace("Bearer ", "")
     return token
 
+
 def verify_credentials(username, email):
-    if any(char in os.getenv("INVALID_USERNAME_CHARACTERS").split(",") for char in username):
-        raise HTTPException(status_code=400, detail="Username contains invalid characters")
-    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+    if any(
+        char in os.getenv("INVALID_USERNAME_CHARACTERS").split(",") for char in username
+    ):
+        raise HTTPException(
+            status_code=400, detail="Username contains invalid characters"
+        )
+    if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
         raise HTTPException(status_code=400, detail="Invalid Email")
+
 
 def get_user_depends(token=Header(title="Authorization token")) -> Users:
     db = session_local()
@@ -46,6 +54,8 @@ def get_user_depends(token=Header(title="Authorization token")) -> Users:
             user = db.query(Users).filter(Users.user_id == payload["user_id"]).first()
             return user
         except Exception:
-            raise HTTPException(status_code=500, detail="Error while trying to find user")
+            raise HTTPException(
+                status_code=500, detail="Error while trying to find user"
+            )
     finally:
         db.close()

@@ -5,14 +5,19 @@ from uuid import uuid4
 import datetime
 from models import Users, JWTTable, Habits, HabitCompletions
 from sqlalchemy.orm import Session
-from authorization_utils import authorize_token, prepare_authorization_token, get_user_depends
-from db_utils import get_db
+from authorization_utils import (
+    authorize_token,
+    prepare_authorization_token,
+    get_user_depends,
+)
+from db_utils import get_db, get_merged_user
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
 from ValidationUtils.validate_entries import validate_string, validate_reset_time
 import datetime
 import os
 from dotenv import load_dotenv
 import random
+from schemas import HabitSchema, HabitCompletionSchema
 
 habit_router = APIRouter()
 load_dotenv()
@@ -26,15 +31,20 @@ XP_RANDOM_FACTOR = os.getenv("XP_RANDOM_FACTOR")
 async def add_habit(
     habit_name: Annotated[str, Body(title="Habit name", min_length=3)],
     habit_desc: Annotated[str, Body(title="Habit decs", min_length=3)],
-    reset_at: Annotated[List[int], Body(title="Resetting time in unix after midnight. SEPARATED BY SPACES")],
+    reset_at: Annotated[
+        List[int],
+        Body(title="Resetting time in unix after midnight. SEPARATED BY SPACES"),
+    ],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
-):
+) -> HabitSchema:
+    user = get_merged_user(user=user)
+
     if not validate_string(habit_name) or not validate_string(habit_desc):
         raise HTTPException(status_code=400, detail="Invalid habit name or description")
     if not validate_reset_time(reset_at):
         raise HTTPException(status_code=400, detail="Invalid resetting time")
-    
+
     reset_at_final = {}
     for reset_time in reset_at:
         reset_at_final[reset_time] = False
@@ -42,8 +52,6 @@ async def add_habit(
     habit_id = str(uuid4())
 
     try:
-        user = db.merge(user)
-
         new_habit = Habits(
             habit_id=habit_id,
             habit_name=habit_name,
@@ -51,52 +59,105 @@ async def add_habit(
             user_id=user.user_id,
             date_created=datetime.datetime.today(),
             reset_at=reset_at_final,
-            owner=user)
+            owner=user,
+        )
 
         user.habits.append(new_habit)
 
         db.commit()
     except Exception:
         raise HTTPException(status_code=500, detail="Error while working with db")
-    
+
+    return new_habit
+
+
 @habit_router.get("/get_habits")
 async def get_habits(
-    user: Users = Depends(get_user_depends),
-    db: Session = Depends(get_db)
+    user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
 ):
-    user = db.merge(user)
+    user = get_merged_user(user=user)
     return user.habits
+
 
 @habit_router.post("/habit_completion")
 async def habit_completion(
-    habit_id: Annotated[str, Header(title="Id of habit that need to be marked as completed")],
+    habit_id: Annotated[
+        str, Header(title="Id of habit that need to be marked as completed")
+    ],
     user: Users = Depends(get_user_depends),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> None:
+    user = get_merged_user(user=user)
+
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
     except Exception:
         raise HTTPException(status_code=400, detail="No such habit with this id")
-    
-    try:
-        if habit.completed:
-            raise HTTPException(status_code=400, detail="This habit is allready completed. Wait until it's resetting time")
 
-        HabitCompletion = HabitCompletions(
-            completion_id=str(uuid4()),
-            habit_id=habit.habit_id,
-            habit_name=habit.habit_name,
-            user_id=user.user_id,
-            completed_at=datetime.datetime.today(),
-            owner=user,
-            habit=habit,
-            )
+    if habit.completed:
+        raise HTTPException(
+            status_code=400,
+            detail="This habit is already completed. Wait until it's resetting time",
+        )
+
+    HabitCompletion = HabitCompletions(
+        completion_id=str(uuid4()),
+        habit_id=habit.habit_id,
+        habit_name=habit.habit_name,
+        user_id=user.user_id,
+        completed_at=datetime.datetime.today(),
+        owner=user,
+        habit=habit,
+    )
+
+    try:
         user.completions.append(HabitCompletion)
         habit.completions.append(HabitCompletion)
 
-        user.xp += round(int(XP_AFTER_COMPLETION) * random.uniform(1, int(XP_RANDOM_FACTOR)))
-
+        user.xp += round(
+            int(XP_AFTER_COMPLETION) * random.uniform(1, int(XP_RANDOM_FACTOR))
+        )
         habit.completed = True
         db.commit()
     except Exception:
         raise HTTPException(status_code=500, detail="Error while working with db")
+
+
+@habit_router.post("/delete_habit")
+async def delete_habit(
+    habit_id: Annotated[str, Header(title="Id of habit to delete")],
+    user: Users = Depends(get_user_depends),
+    db: Session = Depends(get_db),
+) -> None:
+    user = get_merged_user(user=user)
+    try:
+        habit_to_delete = db.query(Habits).filter(Habits.habit_id == habit_id).first()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error while working with db")
+
+    if not habit_to_delete:
+        raise HTTPException(status_code=400, detail="Habit with this id doesn't exist")
+
+    if habit_to_delete.user_id != user.user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    db.delete(habit_to_delete)
+    db.commit()
+
+
+@habit_router.get("/get_completions")
+async def get_completions(
+    habit_id: Annotated[str, Header(title="Id of habit to delete")],
+    user: Users = Depends(get_user_depends),
+    db: Session = Depends(get_db),
+) -> List[HabitCompletionSchema]:
+    user = get_merged_user(user=user)
+    try:
+        habit = db.query(Habits).filter(Habits.habit_id == habit_id).first()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error while working with db")
+
+    if not habit:
+        raise HTTPException(status_code=400, detail="No habit with such id")
+
+    return habit.completions

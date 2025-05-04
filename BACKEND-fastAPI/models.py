@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, JSON
 from sqlalchemy.orm import relationship
 from database import Base
 
+
 class Users(Base):
     __tablename__ = "users"
 
@@ -16,12 +17,14 @@ class Users(Base):
     habits = relationship("Habits", back_populates="owner")
     completions = relationship("HabitCompletions", back_populates="owner")
 
+
 class JWTTable(Base):
     __tablename__ = "jwttable"
 
     user_id = Column(String, ForeignKey("users.user_id"))
     jwt_token = Column(String, primary_key=True, index=True)
     expires_at = Column(Integer)
+
 
 class Habits(Base):
     __tablename__ = "habits"
@@ -37,11 +40,12 @@ class Habits(Base):
     completions = relationship("HabitCompletions", back_populates="habit")
     owner = relationship("Users", back_populates="habits")
 
+
 class HabitCompletions(Base):
     __tablename__ = "habitcompletions"
-    
+
     completion_id = Column(String, primary_key=True)
-    habit_id = Column(String,  ForeignKey("habits.habit_id"))
+    habit_id = Column(String, ForeignKey("habits.habit_id"))
     habit_name = Column(String)
     user_id = Column(String, ForeignKey("users.user_id"))
     completed_at = Column(Integer)

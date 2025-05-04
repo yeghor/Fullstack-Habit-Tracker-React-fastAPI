@@ -8,21 +8,31 @@ from dotenv import load_dotenv
 import os
 from habit_router import habit_router
 from periodic_tasks import update_jwts, reset_all_habits, reset_potential_habit
+
 load_dotenv()
+
 
 def periodic_task():
     update_jwts()
     reset_potential_habit()
 
+
 def periodic_habit_resetting():
     reset_all_habits()
 
+
 scheduler_interval = BackgroundScheduler()
-scheduler_interval.add_job(periodic_task, "interval", seconds=int(os.getenv("PERIODIC_TASK_INTERVAL_SECONDS")))
-scheduler_interval.add_job(periodic_habit_resetting, "cron", hour=int(os.getenv("HABIT_RESETTING_HOURS")), minute=0)
+scheduler_interval.add_job(
+    periodic_task, "interval", seconds=int(os.getenv("PERIODIC_TASK_INTERVAL_SECONDS"))
+)
+scheduler_interval.add_job(
+    periodic_habit_resetting,
+    "cron",
+    hour=int(os.getenv("HABIT_RESETTING_HOURS")),
+    minute=0,
+)
 
 scheduler_interval.start()
-
 
 
 app = FastAPI()
@@ -31,7 +41,8 @@ app.include_router(habit_router)
 
 Base.metadata.create_all(bind=engine)
 
-#temporary
+
+# temporary
 def clear_tables():
     Users.__table__.drop(engine)
     JWTTable.__table__.drop(engine)
