@@ -151,10 +151,10 @@ async def login(
 
 @auth_router.post("/logout")
 async def loogut(
-    authorzation: str = Annotated[str, Header(title="Temprorary authorization token")],
+    token = Header(title="Temprorary authorization token"),
     db: Session = Depends(get_db),
 ) -> None:
-    token = prepare_authorization_token(authorization=authorzation)
+    token = prepare_authorization_token(authorization=token)
 
     jwt_entry: JWTTable = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
 

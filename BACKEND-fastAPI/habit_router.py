@@ -38,7 +38,7 @@ async def add_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> HabitSchema:
-    user = get_merged_user(user=user)
+    user = get_merged_user(user=user, db=db)
 
     if not validate_string(habit_name) or not validate_string(habit_desc):
         raise HTTPException(status_code=400, detail="Invalid habit name or description")
@@ -74,8 +74,8 @@ async def add_habit(
 @habit_router.get("/get_habits")
 async def get_habits(
     user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
-):
-    user = get_merged_user(user=user)
+) -> List[HabitSchema]:
+    user = get_merged_user(user=user, db=db)
     return user.habits
 
 
@@ -87,7 +87,7 @@ async def habit_completion(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
-    user = get_merged_user(user=user)
+    user = get_merged_user(user=user, db=db)
 
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
@@ -129,7 +129,7 @@ async def delete_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
-    user = get_merged_user(user=user)
+    user = get_merged_user(user=user, db=db)
     try:
         habit_to_delete = db.query(Habits).filter(Habits.habit_id == habit_id).first()
     except Exception:
@@ -151,7 +151,7 @@ async def get_completions(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> List[HabitCompletionSchema]:
-    user = get_merged_user(user=user)
+    user = get_merged_user(user=user, db=db)
     try:
         habit = db.query(Habits).filter(Habits.habit_id == habit_id).first()
     except Exception:
