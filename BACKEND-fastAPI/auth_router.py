@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Body, Header, Depends, APIRouter
 from typing import Annotated
 from schemas import TokenSchema, UserSchema
-from GeneratingAuthUtils import consts, jwt_token_handling, password_handling
+from GeneratingAuthUtils import jwt_token_handling, password_handling
 from uuid import uuid4
 import datetime
 from models import Users, JWTTable
