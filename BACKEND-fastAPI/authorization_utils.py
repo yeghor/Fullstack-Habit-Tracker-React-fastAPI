@@ -8,6 +8,8 @@ from models import Users
 from sqlalchemy.orm import Session
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
 from fastapi import Header
+from sqlalchemy.exc import SQLAlchemyError
+from jwt.exceptions import PyJWTError
 
 load_dotenv()
 
@@ -48,14 +50,12 @@ def get_user_depends(token=Header(title="Authorization token")) -> Users:
         authorize_token(token)
         try:
             payload = extract_payload(token)
-        except Exception:
+        except PyJWTError:
             raise HTTPException(status_code=400, detail="Invalid token")
         try:
             user = db.query(Users).filter(Users.user_id == payload["user_id"]).first()
             return user
-        except Exception:
-            raise HTTPException(
-                status_code=500, detail="Error while trying to find user"
-            )
+        except SQLAlchemyError:
+            raise HTTPException(status_code=500, detail="Error while working with database (Depends functions)")
     finally:
         db.close()

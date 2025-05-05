@@ -2,9 +2,10 @@ import jwt
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
-
+from jwt.exceptions import PyJWTError
 load_dotenv()
 
+JWT_SECRET_KEY_TEMP = os.getenv("JWT_SECRET_KEY_TEMP")
 
 def generate_jwt(user_id):
     user_id = str(user_id)
@@ -18,15 +19,15 @@ def generate_jwt(user_id):
         "expires": str(expiry_date_unix),
     }
     return (
-        jwt.encode(payload, os.getenv("JWT_SECRET_KEY_TEMP"), algorithm="HS256"),
+        jwt.encode(payload, JWT_SECRET_KEY_TEMP, algorithm="HS256"),
         expiry_date_unix,
     )
 
 
 def extract_payload(token) -> dict:
     try:
-        return jwt.decode(token, os.getenv("JWT_SECRET_KEY_TEMP"), algorithms=["HS256"])
-    except Exception:
+        return jwt.decode(token, JWT_SECRET_KEY_TEMP, algorithms=["HS256"])
+    except PyJWTError:
         raise ValueError("Invalid token")
 
 

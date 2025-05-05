@@ -6,8 +6,6 @@ import datetime
 from models import Users, JWTTable, Habits, HabitCompletions
 from sqlalchemy.orm import Session
 from authorization_utils import (
-    authorize_token,
-    prepare_authorization_token,
     get_user_depends,
 )
 from db_utils import get_db, get_merged_user
@@ -18,6 +16,7 @@ import os
 from dotenv import load_dotenv
 import random
 from schemas import HabitSchema, HabitCompletionSchema
+from sqlalchemy.exc import SQLAlchemyError
 
 habit_router = APIRouter()
 load_dotenv()
@@ -25,7 +24,6 @@ load_dotenv()
 
 XP_AFTER_COMPLETION = os.getenv("XP_AFTER_COMPLETION")
 XP_RANDOM_FACTOR = os.getenv("XP_RANDOM_FACTOR")
-
 
 @habit_router.post("/add_habit")
 async def add_habit(
@@ -65,8 +63,8 @@ async def add_habit(
         user.habits.append(new_habit)
 
         db.commit()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while working with db")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
     return new_habit
 
@@ -91,8 +89,11 @@ async def habit_completion(
 
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
-    except Exception:
-        raise HTTPException(status_code=400, detail="No such habit with this id")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
+
+    if not habit:
+        raise HTTPException(status_code=400, detail="No habit with such id")
 
     if habit.completed:
         raise HTTPException(
@@ -119,8 +120,8 @@ async def habit_completion(
         )
         habit.completed = True
         db.commit()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while working with db")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
 
 @habit_router.post("/delete_habit")
@@ -132,14 +133,14 @@ async def delete_habit(
     user = get_merged_user(user=user, db=db)
     try:
         habit_to_delete = db.query(Habits).filter(Habits.habit_id == habit_id).first()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while working with db")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
     if not habit_to_delete:
         raise HTTPException(status_code=400, detail="Habit with this id doesn't exist")
 
     if habit_to_delete.user_id != user.user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=401, detail="Unauthorized. User id in habit owner doesn't match.")
 
     db.delete(habit_to_delete)
     db.commit()
@@ -154,8 +155,8 @@ async def get_completions(
     user = get_merged_user(user=user, db=db)
     try:
         habit = db.query(Habits).filter(Habits.habit_id == habit_id).first()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while working with db")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
     if not habit:
         raise HTTPException(status_code=400, detail="No habit with such id")

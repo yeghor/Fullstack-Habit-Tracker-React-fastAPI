@@ -6,6 +6,7 @@ from uuid import uuid4
 import datetime
 from models import Users, JWTTable
 from sqlalchemy.orm import Session
+from jwt.exceptions import PyJWTError, InvalidTokenError, DecodeError
 from authorization_utils import (
     prepare_authorization_token,
     authorize_token,
@@ -13,6 +14,7 @@ from authorization_utils import (
 )
 from db_utils import get_db
 from authorization_utils import get_user_depends
+from sqlalchemy.exc import SQLAlchemyError
 
 auth_router = APIRouter()
 
@@ -50,20 +52,20 @@ async def register(
     # GENERATING JWT TOKEN
     try:
         jwt_token, expires_at = jwt_token_handling.generate_jwt(user_id_str)
-    except Exception:
+    except PyJWTError:
         raise HTTPException(status_code=500, detail=f"Error while generating JWT token")
 
     # USERS TABLE LOGIC
     existing_user: Users = db.query(Users).filter(Users.username == username).first()
     if existing_user:
         raise HTTPException(
-            status_code=409, detail="User with this username is already exists."
+            status_code=409, detail="User with this username is already exists"
         )
 
     existing_user: Users = db.query(Users).filter(Users.email == email).first()
     if existing_user:
         raise HTTPException(
-            status_code=409, detail="User with this E-mail is already exists."
+            status_code=409, detail="User with this E-mail is already exists"
         )
 
     try:
@@ -76,8 +78,8 @@ async def register(
         )
         db.add(user)
         db.commit()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while work with db")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
     try:
         jwt_to_table = JWTTable(
@@ -85,8 +87,8 @@ async def register(
         )
         db.add(jwt_to_table)
         db.commit()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while work with token db")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
     return TokenSchema(token=jwt_token, expires_at=expires_at)
 
@@ -112,8 +114,8 @@ async def login(
             .filter(Users.username == username, Users.email == email)
             .first()
         )
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while working with db")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
     if not potential_user:
         raise HTTPException(status_code=401, detail="This user doesn't exist")
@@ -145,8 +147,12 @@ async def login(
         db.commit()
 
         return TokenSchema(token=jwt_token, expires_at=expires_at)
+    except InvalidTokenError:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Error while working with database")
     except Exception:
-        raise HTTPException(status_code=500, detail="Error while generating jwt token")
+        raise HTTPException(status_code=500, detail="Error while generating/extracting jwt token")
 
 
 @auth_router.post("/logout")
@@ -156,7 +162,10 @@ async def loogut(
 ) -> None:
     token = prepare_authorization_token(authorization=token)
 
-    jwt_entry: JWTTable = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
+    try:
+        jwt_entry: JWTTable = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erorr while working with database")
 
     if not jwt_entry:
         raise HTTPException(status_code=400, detail="Token doesn't exist")
@@ -167,7 +176,7 @@ async def loogut(
 
 @auth_router.get("/get_user_profile")
 async def get_user_profile(
-    user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
+    user: Users = Depends(get_user_depends),
 ) -> UserSchema:
 
     user_mapping = {

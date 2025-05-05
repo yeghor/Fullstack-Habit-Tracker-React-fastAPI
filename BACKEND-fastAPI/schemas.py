@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict
 
 
 class HabitSchema(BaseModel):
@@ -7,6 +7,8 @@ class HabitSchema(BaseModel):
     habit_name: str
     habit_desc: str
     date_created: str
+    completed: bool
+    reset_at: Dict[int, bool]
 
 
 class HabitCompletionSchema(BaseModel):
