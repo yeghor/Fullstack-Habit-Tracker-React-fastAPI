@@ -15,13 +15,15 @@ from authorization_utils import (
 from db_utils import get_db
 from authorization_utils import get_user_depends
 from sqlalchemy.exc import SQLAlchemyError
+import time
+import random
 
 auth_router = APIRouter()
 
 
 @auth_router.get("/")
 async def test() -> str:
-    return "Hello World"
+    return "Hello World: " + str(random.randint(1, 100)) 
 
 
 @auth_router.post("/register")
@@ -102,7 +104,7 @@ async def login(
     email: Annotated[str, Body(title="Your E-mail")],
     db: Session = Depends(get_db),
 ) -> TokenSchema:
-
+    time.sleep(1)
     timestamp = datetime.datetime.now()
     timestamp_unix = round(timestamp.timestamp())
 

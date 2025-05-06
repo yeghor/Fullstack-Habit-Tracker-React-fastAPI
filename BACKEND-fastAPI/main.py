@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 import os
 from habit_router import habit_router
 from periodic_tasks import update_jwts, reset_all_habits, reset_potential_habit
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
-
 
 def periodic_task():
     update_jwts()
@@ -41,6 +41,13 @@ app.include_router(habit_router)
 
 Base.metadata.create_all(bind=engine)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],  
+)
 
 # temporary
 def clear_tables():
