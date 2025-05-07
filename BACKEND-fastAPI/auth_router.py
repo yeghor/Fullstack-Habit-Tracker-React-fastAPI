@@ -100,7 +100,7 @@ async def login(
     username: Annotated[str, Body(title="Username", min_length=3, max_length=50)],
     password: Annotated[
         str, Body(title="Strong password", min_length=8, max_length=30)
-    ],
+    ],  
     email: Annotated[str, Body(title="Your E-mail")],
     db: Session = Depends(get_db),
 ) -> TokenSchema:
