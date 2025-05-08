@@ -1,6 +1,6 @@
 import React from "react";
 import { useContext } from "react";
-import { TokenContext } from "./tokenContext";
+import { TokenContext } from "../tokenContext";
 
 export const Habits = () => {
     const [token, setToken] = useContext(TokenContext)

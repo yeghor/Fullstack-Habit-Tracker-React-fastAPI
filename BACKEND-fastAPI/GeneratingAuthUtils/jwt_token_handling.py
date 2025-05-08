@@ -37,7 +37,6 @@ def check_token_expiery(token) -> bool:
     now_date = datetime.now()
     now_date_unix = now_date.timestamp()
 
-    print(now_date)
     if now_date_unix < float(payload["expires"]):
         return True
     else:

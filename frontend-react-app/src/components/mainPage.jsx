@@ -1,7 +1,8 @@
 import React from "react";
-import { fetchLogin, fetchRegister, fetchLogout } from "./urlParser";
+import { fetchLogin, fetchRegister, fetchLogout } from "../api_fetching/urlParser";
 import { useState, useEffect, useContext } from "react";  
-import { TokenContext } from "./tokenContext";
+import { TokenContext } from "../tokenContext";
+import { Link } from "react-router-dom";
 
 function MainPage() {
     const [token, setToken] = useContext(TokenContext);
@@ -17,8 +18,7 @@ function MainPage() {
         const username = formData.get("username");
         const password = formData.get("password");
         const email = formData.get("email");
-        const loginData = await fetchLogin(username, password, email);
-        setToken(loginData.token);
+        await fetchLogin(username, password, email, setToken);
     };
 
     const logoutHandler = () => {
@@ -31,19 +31,14 @@ function MainPage() {
         <div>
             <h1>Hello, {token}. Let's move to your habits!</h1>
             <a href="/habits">Go to habits</a>
-            <button onClick={logoutHandler}>Logout (clear token)</button>
+            <button onClick={logoutHandler}>Logout</button>
         </div>
     );
     } else {
         return (
             <div>
                 <h1>To start using our app, please, login.</h1>
-                <form onSubmit={loginHandler}>
-                    <input type="text" placeholder="Username" name="username"/>
-                    <input type="password" placeholder="Password" name="password"/>
-                    <input type="text" placeholder="Email" name="email"/>
-                    <button type="submit">Login</button>
-                </form>
+                <Link to="/login">Log-in</Link>
             </div>
         );
     };

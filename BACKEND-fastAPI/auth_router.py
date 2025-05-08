@@ -104,7 +104,6 @@ async def login(
     email: Annotated[str, Body(title="Your E-mail")],
     db: Session = Depends(get_db),
 ) -> TokenSchema:
-    time.sleep(1)
     timestamp = datetime.datetime.now()
     timestamp_unix = round(timestamp.timestamp())
 
