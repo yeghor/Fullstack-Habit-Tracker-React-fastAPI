@@ -31,25 +31,16 @@ export async function fetchLogout(token, setToken) {
 };
 
 export async function fetchRegister(username, password, email, setToken) {
-    try {
-        const response = await fetch(registerURL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                "username": username,
-                "password": password,
-                "email": email
-            }),
-        });
-        const data = await response.json();
-        if(response.ok) {
-            setToken(data.token)
-        };
-    } catch (err) {
-        console.error(response.status)
-        throw err
-    };
-
+    const response = await fetch(registerURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "username": username,
+            "password": password,
+            "email": email
+        }),
+    });
+    return response
 };

@@ -1,12 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import MainPage from './components/mainPage.jsx'
-import Login from './components/login.jsx';
+import Login from './components/authrorization/login.jsx'
+import Register from './components/authrorization/register.jsx';
 import { BrowserRouter, Routes, Route } from 'react-router' 
 import { useState } from 'react';
 import { TokenContext } from './tokenContext.jsx';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 import { Habits } from './components/habits.jsx';
+import LoginTimeOut from './components/loginTimeout.jsx';
 
 
 function Main() {
@@ -28,6 +30,8 @@ function Main() {
                     <Route path='/' element={<MainPage />} />
                     <Route path='/habits' element={<Habits />} />
                     <Route path='/login' element={<Login />} />
+                    <Route path='/register' element={<Register />} />
+                    <Route path='/login-timeout' element={<LoginTimeOut />} />
                 </Routes>
             </TokenContext.Provider>
         </BrowserRouter>

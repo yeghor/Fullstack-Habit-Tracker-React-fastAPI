@@ -1,44 +1,32 @@
 import React from "react";
-import { fetchLogin, fetchRegister, fetchLogout } from "../api_fetching/urlParser";
-import { useState, useEffect, useContext } from "react";  
+import { useContext } from "react";  
 import { TokenContext } from "../tokenContext";
 import { Link } from "react-router-dom";
+import NavBar from "./navBar";
 
 function MainPage() {
     const [token, setToken] = useContext(TokenContext);
 
-    useEffect(() => {
-        console.log(token)
-        console.log("Rerender. User logined or loaded this page")
-    }, [token]);
-
-    const loginHandler = async (event) => {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const username = formData.get("username");
-        const password = formData.get("password");
-        const email = formData.get("email");
-        await fetchLogin(username, password, email, setToken);
-    };
-
-    const logoutHandler = () => {
-        console.log("Logging out (trying to clear token)");
-        fetchLogout(token, setToken);
-    };
-
     if(token) {
         return (
-        <div>
-            <h1>Hello, {token}. Let's move to your habits!</h1>
-            <a href="/habits">Go to habits</a>
-            <button onClick={logoutHandler}>Logout</button>
-        </div>
-    );
+            <div>
+                <NavBar />
+                <h2>Hello. Begin using our app!</h2>
+                <Link to="/habits">Go to habits</Link>
+            </div>
+        );
     } else {
         return (
             <div>
-                <h1>To start using our app, please, login.</h1>
-                <Link to="/login">Log-in</Link>
+                <NavBar />
+                <h2>To start your journey. Please, Sign up</h2>
+                <div>
+                    <p>Already have an account?</p>
+                    <Link to="/register">Register</Link>                    
+                </div>
+                <div>
+                    <Link to="/login">Login</Link>
+                </div>
             </div>
         );
     };

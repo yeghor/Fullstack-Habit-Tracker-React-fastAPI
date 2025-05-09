@@ -9,3 +9,11 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTg2NDMxYzEtY2Y2NS00NzdmLWJ
   "password": "password",
   "email": "emai3@gmail.com"
 } token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZTdlOTAyODEtZWE3Yi00MzFmLTg2MDEtOTk1NTM0NmUyZjgwIiwiaXNzdWVkX2F0IjoiMTc0NjM1MTQ5MiIsImV4cGlyZXMiOiIxNzQ2MzUyMzkyIn0.c7u1AKcl18G_RN3fsnYxpzJQ009bcJ9KDaUTAyStBT0
+
+# REACT
+{
+  "username": "reactshit",
+  "password": "reactpassword",
+  "email": "react@email.com"
+}
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWU1ZmVhZjMtOTRkNC00MGZiLTk5ZTUtMGY0ZTI1MmY0ZTkxIiwiaXNzdWVkX2F0IjoiMTc0NjgwNTUxOSIsImV4cGlyZXMiOiIxNzQ2ODA2NDE5In0.YhngUrE1yviYbPwkWu1Tkyb4Edw6b9SFJoz0y1EyHHo

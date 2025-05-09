@@ -1,8 +1,8 @@
 import React from "react";
 import { useContext, useState, useEffect } from "react";
-import { TokenContext } from "../tokenContext";
-import { fetchLogin } from "../api_fetching/urlParser";
-import {verifyUsernameLength, verifyEmail, verifyPasswordLength} from "../utils/verifyData"
+import { TokenContext } from "../../tokenContext";
+import { fetchLogin } from "../../api_fetching/urlParserAuthorization";
+import {verifyUsernameLength, verifyEmail, verifyPasswordLength} from "../../utils/verifyData"
 import { useNavigate } from "react-router"
 
 const Login = () => {
@@ -42,7 +42,7 @@ const Login = () => {
             setToken(data.token);
             navigate("/")
         } catch (err) {
-            console.error("Error while logging ing ", err);
+            console.error("Error while logging in ", err);
         };
     };
 
