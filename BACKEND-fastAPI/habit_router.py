@@ -115,14 +115,28 @@ async def habit_completion(
         user.completions.append(HabitCompletion)
         habit.completions.append(HabitCompletion)
 
-        user.xp += round(
-            int(XP_AFTER_COMPLETION) * random.uniform(1, int(XP_RANDOM_FACTOR))
-        )
+        user.xp += int(XP_AFTER_COMPLETION)
+
         habit.completed = True
         db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Erorr while working with database")
 
+@habit_router.post("/uncomplete_habit")
+async def uncomplete_habit(
+    habit_id = Annotated[str, Header(title="Id of habit to delete")],
+    user: Users = Depends(get_user_depends),
+    db: Session = Depends(get_db),
+):
+    try:
+        habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
+        habit.completed = False
+
+        user.xp -= int(XP_AFTER_COMPLETION)
+
+        db.commit()
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Error while worrking with database")
 
 @habit_router.post("/delete_habit")
 async def delete_habit(
