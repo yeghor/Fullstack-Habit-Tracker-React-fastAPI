@@ -9,4 +9,4 @@ export const addHabitURL = `${BASE_URL}/add_habit`;
 export const getHabitsURL = `${BASE_URL}/get_habits`;
 export const habitCompletionURL = `${BASE_URL}/habit_completion`;
 export const deleteHabitURL = `${BASE_URL}/delete_habit`;
-export const getHabitCompletionsURL = `${BASE_URL}/delete_habit`;
+export const getHabitCompletionsURL = `${BASE_URL}/get_completions`;

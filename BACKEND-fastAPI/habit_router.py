@@ -97,7 +97,7 @@ async def habit_completion(
 
     if habit.completed:
         raise HTTPException(
-            status_code=400,
+            status_code=409,
             detail="This habit is already completed. Wait until it's resetting time",
         )
 
