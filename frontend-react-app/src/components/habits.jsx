@@ -3,7 +3,7 @@ import { useContext, useEffect } from "react";
 import { TokenContext } from "../tokenContext";
 import { fetchGetHabits, fetchHabitCompletion, fetchUncompleteHabit } from "../api_fetching/urlParserMainFucntionality";
 import { useNavigate } from "react-router-dom";
-import navBar from "./navBar"
+import NavBar from "./navBar"
 
 export const Habits = () => {
     const navigate = useNavigate();
@@ -15,32 +15,32 @@ export const Habits = () => {
 
     useEffect(() => {
         const loadHabits = async () => {
-            if(token) {
-                try {
-                    const response = await fetchGetHabits(token);
+        if(token) {
+            try {
+                const response = await fetchGetHabits(token);
 
-                    if(!response.ok) {
-                        if(response.status === 401) {
-                            setToken();
-                            navigate("/login-timeout");
-                        };
-                        navigate("/server-internal-error")
+                if(!response.ok) {
+                    if(response.status === 401) {
+                        setToken();
+                        navigate("/login-timeout");
                     };
-
-                    const data = await response.json();
-                    console.log(data);
-                    setHabits(data);
-
-                    const initialCheckBoxes = {};
-                    for(let i = 0; i < data.length; i++ ) {
-                        let habit = data[i];
-                        initialCheckBoxes[habit.habit_id] = habit.completed;
-                    };
-                    setCheckBoxes(initialCheckBoxes);
-                } catch (err) {
-                    navigate("/server-internal-error");
+                    navigate("/server-internal-error")
                 };
+
+                const data = await response.json();
+                console.log(data);
+                setHabits(data);
+
+                const initialCheckBoxes = {};
+                for(let i = 0; i < data.length; i++ ) {
+                    let habit = data[i];
+                    initialCheckBoxes[habit.habit_id] = habit.completed;
+                };
+                setCheckBoxes(initialCheckBoxes);
+            } catch (err) {
+                navigate("/server-internal-error");
             };
+        };
         };
         loadHabits();
 
@@ -80,31 +80,30 @@ export const Habits = () => {
     if(token) { 
         return(
             <div>
-                <navBar />
+                <NavBar />
 
                 <h1>Your Habits</h1>
-                <ul>
-                    {habits.map((habit, index) => (
-                        <li key={index}>
-                            <h3>{habit.habit_name}</h3>
-                            <p>Index: {index}</p>
-                            <p>{habit.habit_desc}</p>
-                            <p>Time of resetting: 
-                                {Object.keys(habit.reset_at).map((key) => (
-                                <span key={key}>{key}, </span>
-                                ))}
-                            </p>
-                            <label>
-                                Mark as completed:
-                                <input
-                                    type="checkbox"
-                                    checked={habit.completed}
-                                    onChange={(e) => checkboxHandler(e, habit.habit_id)}/>
-                            </label>
-                            
-                        </li>
-                    ))}
-                </ul>
+                {habits.length === 0 ? <h3>Loading...</h3> : 
+                    <ul>
+                        {habits.map((habit, index) => (
+                            <li key={index}>
+                                <h3>{habit.habit_name}</h3>
+                                <p>Index: {index}</p>
+                                <p>{habit.habit_desc}</p>
+
+                                <label>
+                                    Mark as completed:
+                                    <input
+                                        type="checkbox"
+                                        checked={habit.completed}
+                                        onChange={(e) => checkboxHandler(e, habit.habit_id)}/>
+                                </label>
+                                
+                            </li>
+                        ))}
+                    </ul>
+                }
+
             </div>
         );
     } else {

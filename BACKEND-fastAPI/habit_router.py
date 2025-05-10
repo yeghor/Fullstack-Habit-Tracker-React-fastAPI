@@ -36,6 +36,7 @@ async def add_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> HabitSchema:
+    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
 
     if not validate_string(habit_name) or not validate_string(habit_desc):
@@ -73,7 +74,7 @@ async def add_habit(
 async def get_habits(
     user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
 ) -> List[HabitSchema]:
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
     return user.habits
 
@@ -86,7 +87,7 @@ async def habit_completion(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
 
     try:
@@ -130,7 +131,7 @@ async def uncomplete_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
         habit_completion = db.query(HabitCompletions).order_by(HabitCompletions.completed_at).first()
@@ -156,7 +157,7 @@ async def delete_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
     try:
         habit_to_delete = db.query(Habits).filter(Habits.habit_id == habit_id).first()
@@ -179,7 +180,7 @@ async def get_completions(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> List[HabitCompletionSchema]:
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
     try:
         habit = db.query(Habits).filter(Habits.habit_id == habit_id).first()
