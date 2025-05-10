@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 import random
 from schemas import HabitSchema, HabitCompletionSchema
 from sqlalchemy.exc import SQLAlchemyError
-
+import asyncio
 habit_router = APIRouter()
 load_dotenv()
 
@@ -73,6 +73,7 @@ async def add_habit(
 async def get_habits(
     user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
 ) -> List[HabitSchema]:
+    await asyncio.sleep(1)
     user = get_merged_user(user=user, db=db)
     return user.habits
 
@@ -85,6 +86,7 @@ async def habit_completion(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
+    await asyncio.sleep(1)
     user = get_merged_user(user=user, db=db)
 
     try:
@@ -106,7 +108,7 @@ async def habit_completion(
         habit_id=habit.habit_id,
         habit_name=habit.habit_name,
         user_id=user.user_id,
-        completed_at=datetime.datetime.today(),
+        completed_at=datetime.datetime.today().timestamp(),
         owner=user,
         habit=habit,
     )
@@ -124,16 +126,26 @@ async def habit_completion(
 
 @habit_router.post("/uncomplete_habit")
 async def uncomplete_habit(
-    habit_id = Annotated[str, Header(title="Id of habit to delete")],
+    habit_id: Annotated[str, Header(title="Id of habit to delete")],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):
+    await asyncio.sleep(1)
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
+        habit_completion = db.query(HabitCompletions).order_by(HabitCompletions.completed_at).first()
+
+        db.delete(habit_completion)
+
         habit.completed = False
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Error while worrking with database")
 
+    if not habit:
+        raise HTTPException(status_code=400, detail="No such habit")
+
+    try:
         user.xp -= int(XP_AFTER_COMPLETION)
-
         db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while worrking with database")
@@ -144,6 +156,7 @@ async def delete_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
+    await asyncio.sleep(1)
     user = get_merged_user(user=user, db=db)
     try:
         habit_to_delete = db.query(Habits).filter(Habits.habit_id == habit_id).first()
@@ -166,6 +179,7 @@ async def get_completions(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> List[HabitCompletionSchema]:
+    await asyncio.sleep(1)
     user = get_merged_user(user=user, db=db)
     try:
         habit = db.query(Habits).filter(Habits.habit_id == habit_id).first()

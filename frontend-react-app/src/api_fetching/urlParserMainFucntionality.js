@@ -4,7 +4,8 @@ import {
     habitCompletionURL,
     deleteHabitURL,
     getHabitCompletionsURL,
-    getUserProfileURL
+    getUserProfileURL,
+    uncompleteHabitURL
 } from "./urls";
 
 export const fetchGetUserProfile = async (token) => {
@@ -45,6 +46,17 @@ export const fetchAddHabit = async (habitName, habitDesc, resetAt, token) => {
 
 export const fetchHabitCompletion = async (habitID, token) => {
     const response = await fetch(habitCompletionURL, {
+        method: "POST",
+        headers: {
+            "habit-id": habitID,
+            "token": "Bearer " + token
+        }
+    });
+    return response
+};
+
+export const fetchUncompleteHabit = async (habitID, token) => {
+    const response = await fetch(uncompleteHabitURL, {
         method: "POST",
         headers: {
             "habit-id": habitID,

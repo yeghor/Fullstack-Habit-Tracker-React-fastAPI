@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useContext, useEffect } from "react";
 import { TokenContext } from "../tokenContext";
-import { fetchGetHabits, fetchHabitCompletion } from "../api_fetching/urlParserMainFucntionality";
+import { fetchGetHabits, fetchHabitCompletion, fetchUncompleteHabit } from "../api_fetching/urlParserMainFucntionality";
 import { useNavigate } from "react-router-dom";
-
+import navBar from "./navBar"
 
 export const Habits = () => {
     const navigate = useNavigate();
@@ -60,19 +60,29 @@ export const Habits = () => {
                 navigate("/server-internal-error");
             };
 
-            setCheckBoxes((current) => current.habitID = true)
-            setLoadHabits(!loadHabits)
+            setCheckBoxes((current) => current.habitID = true);
+            setLoadHabits(!loadHabits);
 
         } else {
-            
+            const response = await fetchUncompleteHabit(habitID, token);
+            if(!response.ok) {
+                if(response.status == 401) {
+                    navigate("/login-timeout");
+                };
+                navigate("/server-internal-error");
+            };
+
+            setCheckBoxes((current) => current.habitID = false);
+            setLoadHabits(!loadHabits)
         }
     }
 
     if(token) { 
         return(
             <div>
-                <p>test</p>
-                <h2>dasdasd</h2>
+                <navBar />
+
+                <h1>Your Habits</h1>
                 <ul>
                     {habits.map((habit, index) => (
                         <li key={index}>
