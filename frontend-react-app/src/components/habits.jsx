@@ -10,11 +10,10 @@ export const Habits = () => {
     const [token, setToken] = useContext(TokenContext);
     const [habits, setHabits] = useState([]);
     const [checkBoxes, setCheckBoxes] = useState({})
-    const [completed, setCompleted] = useState(false)
     const [loadHabits, setLoadHabits] = useState(false)
 
     useEffect(() => {
-        const loadHabits = async () => {
+        const fetchHabits = async () => {
         if(token) {
             try {
                 const response = await fetchGetHabits(token);
@@ -40,9 +39,11 @@ export const Habits = () => {
             } catch (err) {
                 navigate("/server-internal-error");
             };
+        } else {
+            navigate("/login")
         };
         };
-        loadHabits();
+        fetchHabits();
 
     }, [loadHabits]);
 
@@ -60,7 +61,7 @@ export const Habits = () => {
                 navigate("/server-internal-error");
             };
 
-            setCheckBoxes((current) => current.habitID = true);
+            setCheckBoxes((current) => ({ ...current, [habitID]: true }));
             setLoadHabits(!loadHabits);
 
         } else {
@@ -73,7 +74,7 @@ export const Habits = () => {
             };
 
             setCheckBoxes((current) => current.habitID = false);
-            setLoadHabits(!loadHabits)
+            setLoadHabits(!loadHabits);
         }
     }
 
@@ -86,7 +87,7 @@ export const Habits = () => {
                 {habits.length === 0 ? <h3>Loading...</h3> : 
                     <ul>
                         {habits.map((habit, index) => (
-                            <li key={index}>
+                            <li key={habit.habit_id}>
                                 <h3>{habit.habit_name}</h3>
                                 <p>Index: {index}</p>
                                 <p>{habit.habit_desc}</p>
@@ -106,10 +107,6 @@ export const Habits = () => {
 
             </div>
         );
-    } else {
-        return(
-            <div>Not Logged in</div>
-        );
-    };
+    }
 };
 
