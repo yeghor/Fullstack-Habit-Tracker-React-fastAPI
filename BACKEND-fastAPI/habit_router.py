@@ -18,6 +18,7 @@ import random
 from schemas import HabitSchema, HabitCompletionSchema
 from sqlalchemy.exc import SQLAlchemyError
 import asyncio
+
 habit_router = APIRouter()
 load_dotenv()
 
