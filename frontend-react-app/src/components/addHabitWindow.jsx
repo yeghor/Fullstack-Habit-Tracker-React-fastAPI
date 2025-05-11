@@ -10,13 +10,12 @@ const AddHabitWindow = (props) => {
     const [ resetHours, setResetHours ] = useState("")
     const [ resetMinutes, setResetMinutes ] = useState("")
 
-    const formatResetTime = (e, props) => {
-        e.preventDefault();
+    const formatResetTime = (time) => {
+        const hours = Math.floor(time / 3600);
+        const minutes = Math.floor((time % 3600) / 60);
 
-        const hours = Math.floor(props.time / 3600);
-        const minutes = Math.floor((props.time % 3600))
-
-    }
+        return `${hours.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}:${minutes.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`;
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -25,13 +24,20 @@ const AddHabitWindow = (props) => {
     };
 
     const resetTimeAdding = (e) => {
-        e.preventDefault();
+    e.preventDefault();
+    if (
+        resetHours >= 0 && resetHours <= 24 &&
+        resetMinutes >= 0 && resetMinutes <= 60
+    ) {
         const resetAtUnix = ((resetHours * 60) * 60) + (resetMinutes * 60);
 
         const curentResetArray = [...resettingTimes];
         curentResetArray.push(resetAtUnix);
 
         setResettingTimes(curentResetArray);
+    } else {
+        alert("Enter Correct time!");
+    };
     };
 
     return(
@@ -56,29 +62,40 @@ const AddHabitWindow = (props) => {
                     <div>
                         <label>
                             Resetting time, 24 hours:
-                            <input type="text" 
+                            <input type="number" 
                                     value={resetHours}
                                     placeholder="Hours (from 0 to 24)"
-                                    onChange={(e) => setResetHours(e.target.value)}
-                                    minLength="0"
-                                    maxLength="24"
+                                    onChange={e => {
+                                        const value = Number(e.target.value);
+                                        if(value >= 0 && value <= 24) {
+                                            setResetHours(String(e.target.value));
+                                        };
+                                    }}
+                                    min="0"
+                                    max="24"
                                     required />
 
-                            <input type="text"
-                            value={resetMinutes}
-                            placeholder="Minutes (from 0 to 60)"
-                            onChange={(e) => setResetMinutes(e.target.value)}
-                            minLength="0"
-                            maxLength="60"/>
+                            <input type="number"
+                                value={resetMinutes}
+                                placeholder="Minutes (from 0 to 60)"
+                                onChange={e => {
+                                    const value = Number(e.target.value);
+                                    if(value >= 0 && value <= 60) {
+                                        setResetMinutes(String(e.target.value));
+                                    };
+                                }}
+                                min="0"
+                                max="60"/>
                         </label>
                         <button onClick={resetTimeAdding}>Add</button>
                     </div>
 
                 </form>
+                <label>Reset daily at:</label>
                 <ul>
                     {resettingTimes.map((time, index) => (
                         <li key={index}>
-                            <span>{formatResetTime(e, time)}</span>
+                            <span>{formatResetTime(time)}</span>
                         </li>
                     ))}
                 </ul>
