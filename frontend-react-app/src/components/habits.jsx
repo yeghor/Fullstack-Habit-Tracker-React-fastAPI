@@ -4,6 +4,7 @@ import { TokenContext } from "../tokenContext";
 import { fetchGetHabits, fetchHabitCompletion, fetchUncompleteHabit } from "../api_fetching/urlParserMainFucntionality";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./navBar"
+import AddHabitButton from "./addHabitButton";
 
 export const Habits = () => {
     const navigate = useNavigate();
@@ -11,40 +12,39 @@ export const Habits = () => {
     const [habits, setHabits] = useState([]);
     const [loadHabits, setLoadHabits] = useState(false)
     const [loading, setLoading] = useState(false)
-
     useEffect(() => {
+        if(!token) {
+        navigate("/login");
+        };
+
         const fetchHabits = async () => {
-        try {
-            setLoading(true)
-            if(token) {
-                try {
-                    const response = await fetchGetHabits(token);
+            setLoading(true);
+            try {
+                const response = await fetchGetHabits(token);
 
-                    if(!response.ok) {
-                        if(response.status === 401) {
-                            setToken();
-                            navigate("/login-timeout");
-                        };
-                        navigate("/server-internal-error")
-                    };
-
-                    const data = await response.json();
-                    console.log(data);
-                    setHabits(data);
-
-                } catch (err) {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        setToken();
+                        navigate("/login");
+                        return;
+                    }
                     navigate("/server-internal-error");
-                };
-            } else {
-                navigate("/login")
-            };
-        } finally {
-            setLoading(false)
-        };
-        };
-        fetchHabits();
+                    return;
+                }
 
-    }, [loadHabits]);
+                const data = await response.json();
+                console.log(data);
+                setHabits(data);
+            } catch (err) {
+                console.error("Error fetching habits:", err);
+                navigate("/server-internal-error");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHabits();
+    }, [loadHabits, token, navigate, setToken]);
 
     const checkboxHandler = async (e, habitID, index) => {
         const updatedHabits = [...habits];
@@ -82,6 +82,7 @@ export const Habits = () => {
                 <NavBar />
 
                 <h1>Your Habits</h1>
+                <AddHabitButton />
                 {loading ? <h3>Loading...</h3> : 
                     (habits.length === 0 ? <h3>No habits added yet</h3> :
                         <ul>
