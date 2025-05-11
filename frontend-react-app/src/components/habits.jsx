@@ -5,6 +5,7 @@ import { fetchGetHabits, fetchHabitCompletion, fetchUncompleteHabit } from "../a
 import { useNavigate } from "react-router-dom";
 import NavBar from "./navBar"
 import AddHabitButton from "./addHabitButton";
+import DeleteHabit from "./deleteHabit";
 
 export const Habits = () => {
     const navigate = useNavigate();
@@ -57,7 +58,7 @@ export const Habits = () => {
             const response = await fetchHabitCompletion(habitID, token);
 
             if(!response.ok) {
-                if(response.status == 401) {
+                if(response.status == "401") {
                     navigate("/login-timeout");
                 } else if(response.status == 409) {
                     return;
@@ -100,6 +101,12 @@ export const Habits = () => {
                                             checked={habit.completed}
                                             onChange={(e) => checkboxHandler(e, habit.habit_id, index)}/>
                                     </label>
+                                    <DeleteHabit
+                                        habit={habit}
+                                        habits={habits}
+                                        setHabits={setHabits}
+                                        index={index}
+                                    />
                                 </li>
                             ))}
                         </ul>
@@ -109,4 +116,3 @@ export const Habits = () => {
         );
     };
 };
-

@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useContext } from "react";
-import "./popUpStyles.css"
+import "./addHabitPop.css"
 import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality";
 import { TokenContext } from "../tokenContext";
 import { useNavigate } from "react-router";
@@ -53,7 +53,7 @@ const AddHabitWindow = (props) => {
     e.preventDefault();
     if (
         resetHours >= 0 && resetHours <= 24 &&
-        resetMinutes >= 0 && resetMinutes <= 60
+        resetMinutes >= 0 && resetMinutes <= 59
     ) {
         
 
@@ -119,7 +119,7 @@ const AddHabitWindow = (props) => {
                                 placeholder="Minutes (from 0 to 60)"
                                 onChange={e => {
                                     const value = Number(e.target.value);
-                                    if(value >= 0 && value <= 60) {
+                                    if(value >= 0 && value <= 59) {
                                         setResetMinutes(String(e.target.value));
                                     };
                                 }}
@@ -141,8 +141,6 @@ const AddHabitWindow = (props) => {
                     ))}
                 </ul>
                 </div>
-
-
                 <button onClick={() => props.toggle()}>Close</button>
             </div>
         </div>
