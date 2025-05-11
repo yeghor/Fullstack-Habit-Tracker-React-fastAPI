@@ -64,11 +64,11 @@ margin-top: 20px;
 
 .popup-inner button[type="button"] {
 margin-top: 20px;
-background-color: #f44336;
+background-color: #2898f4;
 }
 
 .popup-inner button[type="button"]:hover {
-background-color: #da190b;
+background-color: #2898f4;
 }
 
 .popup-inner button[type="submit"]:disabled {

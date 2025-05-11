@@ -11,7 +11,7 @@ const AddHabitWindow = (props) => {
     const [ habitName, setHabitName ] = useState("");
     const [ habitsDesc, setHabitDesc ] = useState("");
 
-    const [ token, seToken ] = useContext(TokenContext);
+    const [ token, setToken ] = useContext(TokenContext);
 
     const [ resetHours, setResetHours ] = useState(Number);
     const [ resetMinutes, setResetMinutes ] = useState(Number);
@@ -26,8 +26,8 @@ const AddHabitWindow = (props) => {
     };
 
     const deleteResetTime = (index) => {
-        const curentResetArray = [...resetTimeArray.slice(0, index), ...resetTimeArray.slice(index + 1)];
-        setResettingTimes(curentResetArray);
+        const updatedResetArray = [...resetTimeArray.slice(0, index), ...resetTimeArray.slice(index + 1)];
+        setResettingTimes(updatedResetArray);
     }
 
     const handleSubmit = async (e) => {
@@ -36,7 +36,7 @@ const AddHabitWindow = (props) => {
         try {
             const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
             if(!response.ok) {
-                const responseJSON = await responseJSON.json();
+                const responseJSON = await response.json();
                 console.error(responseJSON.detail);
                 navigate("/internal-server-error");
             }
@@ -65,10 +65,10 @@ const AddHabitWindow = (props) => {
         } 
         setTimeErrorMessage(null)
 
-        const curentResetArray = [...resetTimeArray];
-        curentResetArray.push(resetAtUnix);
+        const updatedResetArray = [...resetTimeArray];
+        updatedResetArray.push(resetAtUnix);
 
-        setResettingTimes(curentResetArray);
+        setResettingTimes(updatedResetArray);
     } else {
         alert("Enter Correct time!");
     };
@@ -126,7 +126,7 @@ const AddHabitWindow = (props) => {
                                 min="0"
                                 max="60"/>
                         </label>
-                        <button onClick={resetTimeAdding}>Add</button>
+                        <button type="button" onClick={resetTimeAdding}>Add</button>
                     </div>
                     <button type="submit">Submit</button>
                 </form>
@@ -136,7 +136,7 @@ const AddHabitWindow = (props) => {
                         {resetTimeArray.map((time, index) => (
                         <li className="resetting-times-item" key={index}>
                         <span>{formatResetTime(time)}</span>
-                        <button className="close-btn" aria-label="Close" onClick={() => deleteResetTime(index)}></button>
+                        <button className="close-btn" aria-label="Close" onClick={() => deleteResetTime(index)} />
                     </li>
                     ))}
                 </ul>
