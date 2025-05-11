@@ -90,3 +90,65 @@ cursor: not-allowed;
     border-radius: 5px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
 }
+
+.resetting-times-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.resetting-times-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.close-btn {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.close-btn::before,
+.close-btn::after {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 4px;
+  width: 2px;
+  height: 16px;
+  background-color: #333;
+  border-radius: 2px;
+}
+
+.close-btn::before {
+  transform: rotate(45deg);
+}
+
+.close-btn::after {
+  transform: rotate(-45deg);
+}
+
+.info-block {
+  background: #eaf6fb;             
+  border: 1.5px solid #90cdf4;
+  border-radius: 8px;               
+  padding: 18px 20px 14px 20px;       
+  margin: 20px 0;                      
+  box-shadow: 0 2px 8px rgba(144, 205, 244, 0.13); 
+  color: #2b4360;                      
+  font-size: 1rem;
+}
+
+.info-block label {
+  font-weight: 600;
+  font-size: 1.04em;
+  margin-bottom: 8px;
+  display: block;
+  color: #206090;
+  letter-spacing: 0.02em;
+}

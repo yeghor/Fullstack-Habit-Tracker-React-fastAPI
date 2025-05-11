@@ -32,6 +32,7 @@ function Main() {
                     <Route path='/login' element={<Login />} />
                     <Route path='/register' element={<Register />} />
                     <Route path='/login-timeout' element={<LoginTimeOut />} />
+                    <Route path='/internal-server-error' element={<div>500 INTERNAL SERVER ERROR</div>} />
                 </Routes>
             </TokenContext.Provider>
         </BrowserRouter>

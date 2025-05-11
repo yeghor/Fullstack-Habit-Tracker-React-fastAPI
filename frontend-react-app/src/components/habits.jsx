@@ -12,6 +12,7 @@ export const Habits = () => {
     const [habits, setHabits] = useState([]);
     const [loadHabits, setLoadHabits] = useState(false)
     const [loading, setLoading] = useState(false)
+
     useEffect(() => {
         if(!token) {
         navigate("/login");
@@ -28,7 +29,7 @@ export const Habits = () => {
                         navigate("/login");
                         return;
                     }
-                    navigate("/server-internal-error");
+                    navigate("/internal-server-error");
                     return;
                 }
 
@@ -37,7 +38,7 @@ export const Habits = () => {
                 setHabits(data);
             } catch (err) {
                 console.error("Error fetching habits:", err);
-                navigate("/server-internal-error");
+                navigate("/internal-server-error");
             } finally {
                 setLoading(false);
             }
@@ -61,7 +62,7 @@ export const Habits = () => {
                 } else if(response.status == 409) {
                     return;
                 }
-                navigate("/server-internal-error");
+                navigate("/internal-server-error");
             };
 
         } else {
@@ -71,7 +72,7 @@ export const Habits = () => {
                 if(response.status == 401) {
                     navigate("/login-timeout");
                 };
-                navigate("/server-internal-error");
+                navigate("/");
             };
         };
     };
@@ -82,7 +83,7 @@ export const Habits = () => {
                 <NavBar />
 
                 <h1>Your Habits</h1>
-                <AddHabitButton />
+                <AddHabitButton loadHabits={loadHabits} setLoadHabits={setLoadHabits}/>
                 {loading ? <h3>Loading...</h3> : 
                     (habits.length === 0 ? <h3>No habits added yet</h3> :
                         <ul>

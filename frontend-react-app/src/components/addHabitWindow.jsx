@@ -1,14 +1,22 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import "./popUpStyles.css"
+import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality";
+import { TokenContext } from "../tokenContext";
+import { useNavigate } from "react-router";
 
 const AddHabitWindow = (props) => {
-    const [ resettingTimes, setResettingTimes ] = useState([])
-    const [ habitName, setHabitName ] = useState("")
-    const [ habitsDesc, setHabitDesc ] = useState("")
+    const navigate = useNavigate();
+    const [ resetTimeArray, setResettingTimes ] = useState([]);
+    const [ habitName, setHabitName ] = useState("");
+    const [ habitsDesc, setHabitDesc ] = useState("");
 
-    const [ resetHours, setResetHours ] = useState("")
-    const [ resetMinutes, setResetMinutes ] = useState("")
+    const [ token, seToken ] = useContext(TokenContext);
+
+    const [ resetHours, setResetHours ] = useState(Number);
+    const [ resetMinutes, setResetMinutes ] = useState(Number);
+
+    const [ timeErrorMessage, setTimeErrorMessage ] = useState(null);
 
     const formatResetTime = (time) => {
         const hours = Math.floor(time / 3600);
@@ -17,8 +25,26 @@ const AddHabitWindow = (props) => {
         return `${hours.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}:${minutes.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`;
     };
 
-    const handleSubmit = (e) => {
+    const deleteResetTime = (index) => {
+        const curentResetArray = [...resetTimeArray.slice(0, index), ...resetTimeArray.slice(index + 1)];
+        setResettingTimes(curentResetArray);
+    }
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        try {
+            const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
+            if(!response.ok) {
+                const responseJSON = await responseJSON.json();
+                console.error(responseJSON.detail);
+                navigate("/internal-server-error");
+            }
+            props.setLoadHabits(!props.loadHabits);
+        } catch(err) {
+            console.error(err)
+            navigate("/internal-server-error");
+        }
 
         props.toggle();
     };
@@ -29,9 +55,17 @@ const AddHabitWindow = (props) => {
         resetHours >= 0 && resetHours <= 24 &&
         resetMinutes >= 0 && resetMinutes <= 60
     ) {
+        
+
         const resetAtUnix = ((resetHours * 60) * 60) + (resetMinutes * 60);
 
-        const curentResetArray = [...resettingTimes];
+        if(resetTimeArray.includes(resetAtUnix)) {
+            setTimeErrorMessage("You're already added this resetting time!")
+            return
+        } 
+        setTimeErrorMessage(null)
+
+        const curentResetArray = [...resetTimeArray];
         curentResetArray.push(resetAtUnix);
 
         setResettingTimes(curentResetArray);
@@ -62,6 +96,11 @@ const AddHabitWindow = (props) => {
                     <div>
                         <label>
                             Resetting time, 24 hours:
+
+                            {timeErrorMessage ? 
+                                <p>{timeErrorMessage}</p>
+                            : null}
+
                             <input type="number" 
                                     value={resetHours}
                                     placeholder="Hours (from 0 to 24)"
@@ -89,16 +128,20 @@ const AddHabitWindow = (props) => {
                         </label>
                         <button onClick={resetTimeAdding}>Add</button>
                     </div>
-
+                    <button type="submit">Submit</button>
                 </form>
-                <label>Reset daily at:</label>
-                <ul>
-                    {resettingTimes.map((time, index) => (
-                        <li key={index}>
-                            <span>{formatResetTime(time)}</span>
-                        </li>
+                <div className="info-block">
+                    <label>Reset daily at:</label>
+                    <ul className="resetting-times-list">
+                        {resetTimeArray.map((time, index) => (
+                        <li className="resetting-times-item" key={index}>
+                        <span>{formatResetTime(time)}</span>
+                        <button className="close-btn" aria-label="Close" onClick={() => deleteResetTime(index)}></button>
+                    </li>
                     ))}
                 </ul>
+                </div>
+
 
                 <button onClick={() => props.toggle()}>Close</button>
             </div>

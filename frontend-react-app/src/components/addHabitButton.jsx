@@ -4,7 +4,7 @@ import tokenContext from "../tokenContext";
 import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality"
 import AddHabitWindow from "./addHabitWindow"
 
-const AddHabitButton = () => {
+const AddHabitButton = (props) => {
     const [ seen, setSeen ] = useState(false);
 
     const togglePop = (e) => {
@@ -15,7 +15,10 @@ const AddHabitButton = () => {
     return(
         <div>
             <button onClick={togglePop}>Add habit</button>
-            {seen ? <AddHabitWindow toggle={togglePop} /> : null}
+            {seen ? <AddHabitWindow toggle={togglePop}
+                                    loadHabits={props.loadHabits}
+                                    setLoadHabits={props.setLoadHabits}/>
+            : null}
         </div>
     );
 };
