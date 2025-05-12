@@ -24,7 +24,7 @@ const DeleteHabit = (props) => {
             };
             navigate("/internal-server-error");
         };
-        const updatedHabits = [...props.habits];
+        let updatedHabits = [...props.habits];
         delete updatedHabits[props.index];
         props.setHabits(updatedHabits);
         setPop(false);

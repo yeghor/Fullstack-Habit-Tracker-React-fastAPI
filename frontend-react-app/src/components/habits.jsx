@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "./navBar"
 import AddHabitButton from "./addHabitButton";
 import DeleteHabit from "./deleteHabit";
+import "./habits-page.css"
 
 export const Habits = () => {
     const navigate = useNavigate();
@@ -85,10 +86,16 @@ export const Habits = () => {
 
                 <h1>Your Habits</h1>
                 <AddHabitButton loadHabits={loadHabits} setLoadHabits={setLoadHabits}/>
+                
+                <div className="container">
+                    <button className="load-button" onClick={() => setLoadHabits(!loadHabits)}>Reload Habits</button>
+                </div>
+
                 {loading ? <h3>Loading...</h3> : 
                     (habits.length === 0 ? <h3>No habits added yet</h3> :
                         <ul>
                             {habits.map((habit, index) => (
+                                habit ? 
                                 <li key={habit.habit_id}>
                                     <h3>{habit.habit_name}</h3>
                                     <p>Index: {index}</p>
@@ -108,7 +115,7 @@ export const Habits = () => {
                                         index={index}
                                     />
                                 </li>
-                            ))}
+                            : <h3>No habits added yet</h3>))}
                         </ul>
                     )
                 }
