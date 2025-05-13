@@ -28,3 +28,6 @@ class UserSchema(BaseModel):
 class TokenSchema(BaseModel):
     token: str
     expires_at: int
+
+class GetUNIXFromMidnight(BaseModel):
+    UNIX_time: int

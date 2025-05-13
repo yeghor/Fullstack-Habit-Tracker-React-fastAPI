@@ -3,7 +3,6 @@ from database import session_local
 from sqlalchemy.orm import Session
 import datetime
 
-
 def reset_all_habits() -> None:
     db: Session = session_local()
     try:

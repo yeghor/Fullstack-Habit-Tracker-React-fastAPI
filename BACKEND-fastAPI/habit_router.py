@@ -18,6 +18,7 @@ import random
 from schemas import HabitSchema, HabitCompletionSchema
 from sqlalchemy.exc import SQLAlchemyError
 import asyncio
+from periodic_tasks import get_seconds_from_midnight
 
 habit_router = APIRouter()
 load_dotenv()
@@ -115,6 +116,14 @@ async def habit_completion(
         habit=habit,
     )
 
+    from_midnight_unix = get_seconds_from_midnight()
+    reset_at = habit.reset_at
+    reset_at_sorted = dict(sorted(reset_at.items()))
+
+    for time, flag in reset_at_sorted.items():
+        if from_midnight_unix > int(time) and not flag:
+            reset_at_sorted[time] = True
+
     try:
         user.completions.append(HabitCompletion)
         habit.completions.append(HabitCompletion)
@@ -122,6 +131,7 @@ async def habit_completion(
         user.xp += int(XP_AFTER_COMPLETION)
 
         habit.completed = True
+
         db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Erorr while working with database")

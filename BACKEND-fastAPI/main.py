@@ -9,6 +9,7 @@ import os
 from habit_router import habit_router
 from periodic_tasks import update_jwts, reset_all_habits, reset_potential_habit
 from fastapi.middleware.cors import CORSMiddleware
+from utils_router import utils_router
 
 load_dotenv()
 
@@ -38,6 +39,7 @@ scheduler_interval.start()
 app = FastAPI()
 app.include_router(auth_router)
 app.include_router(habit_router)
+app.include_router(utils_router)
 
 Base.metadata.create_all(bind=engine)
 

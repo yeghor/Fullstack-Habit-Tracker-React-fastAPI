@@ -100,7 +100,7 @@ export const Habits = () => {
                                     <h3>{habit.habit_name}</h3>
                                     <p>Index: {index}</p>
                                     <p>{habit.habit_desc}</p>
-
+                                    {console.log(habit.reset_at)}
                                     <label>
                                         Mark as completed:
                                         <input
@@ -115,7 +115,7 @@ export const Habits = () => {
                                         index={index}
                                     />
                                 </li>
-                            : <h3>No habits added yet</h3>))}
+                            : null))}
                         </ul>
                     )
                 }
