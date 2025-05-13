@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { useContext, useEffect } from "react";
 import { TokenContext } from "../tokenContext";
 import { fetchGetHabits, fetchHabitCompletion, fetchUncompleteHabit } from "../api_fetching/urlParserMainFucntionality";
+import { fetchGetUNIXFromMidnight } from "../api_fetching/urlParserUtils";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./navBar"
 import AddHabitButton from "./addHabitButton";
 import DeleteHabit from "./deleteHabit";
 import "./habits-page.css"
+import { minutesToReset } from "../utils/getTimeUntilReset";
 
 export const Habits = () => {
     const navigate = useNavigate();
@@ -36,8 +38,17 @@ export const Habits = () => {
                 }
 
                 const data = await response.json();
-                console.log(data);
-                setHabits(data);
+                console.log("DATA!!", data)
+
+                let updatedDataWithResetAt = []
+                for(let i = 0; i < data.length; i++) {
+                    let habit = data[i]
+                    const timeString = await getClosestResetTime(habit.reset_at, habit.completed);
+                    habit.resetAt = timeString;
+                    updatedDataWithResetAt.push(habit)
+                };
+
+                setHabits(updatedDataWithResetAt);
             } catch (err) {
                 console.error("Error fetching habits:", err);
                 navigate("/internal-server-error");
@@ -79,6 +90,37 @@ export const Habits = () => {
         };
     };
 
+    const getClosestResetTime = async (resetAt, completed) => {
+        const response = await fetchGetUNIXFromMidnight(token);
+        if(!response.ok) {
+            if(response.status == 401) {
+                navigate("login");
+            };
+            navigate("/internal-server-error");
+        };
+        const data = await response.json();
+        const UNIXFromMidnight = Number(data.UNIX_time);
+
+        let requiredWindow = null;
+        const resetAtKeys = Object.keys(resetAt);
+        for(let i = 0; i < resetAtKeys.length; i++) {
+            let currentWindow = resetAtKeys[i];
+            if(UNIXFromMidnight < Number(currentWindow)) {
+                requiredWindow = currentWindow;
+                break
+            };
+        };
+        console.log(requiredWindow)
+        if(!requiredWindow) {
+            if(completed) {
+                return "You're all done! Check your habits tomorrow."
+            } else {
+                return "No more resets until tomorrow."
+            };
+        };
+        return minutesToReset(requiredWindow, UNIXFromMidnight);
+        };
+
     if(token) { 
         return(
             <div>
@@ -100,7 +142,7 @@ export const Habits = () => {
                                     <h3>{habit.habit_name}</h3>
                                     <p>Index: {index}</p>
                                     <p>{habit.habit_desc}</p>
-                                    {console.log(habit.reset_at)}
+                                    <p>{habit.resetAt}</p>
                                     <label>
                                         Mark as completed:
                                         <input
@@ -121,5 +163,7 @@ export const Habits = () => {
                 }
             </div>
         );
+    } else {
+        navigate("/login")
     };
 };
