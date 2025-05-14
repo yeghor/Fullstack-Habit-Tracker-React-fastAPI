@@ -9,6 +9,7 @@ import AddHabitButton from "./addHabitButton";
 import DeleteHabit from "./deleteHabit";
 import "./habits-page.css"
 import { minutesToReset } from "../utils/getTimeUntilReset";
+import { handleResponseError } from "../utils/handleResponse";
 
 export const Habits = () => {
     const navigate = useNavigate();
@@ -26,22 +27,13 @@ export const Habits = () => {
             setLoading(true);
             try {
                 const response = await fetchGetHabits(token);
+                const responseJSON = await response.json();
 
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        setToken();
-                        navigate("/login");
-                        return;
-                    }
-                    navigate("/internal-server-error");
-                    return;
-                }
-
-                const data = await response.json();
+                handleResponseError(response, responseJSON, navigate);
 
                 let updatedDataWithResetAt = []
-                for(let i = 0; i < data.length; i++) {
-                    let habit = data[i]
+                for(let i = 0; i < responseJSON.length; i++) {
+                    let habit = responseJSON[i]
                     const timeString = await getClosestResetTime(habit.reset_at, habit.completed);
                     habit.resetAt = timeString;
                     updatedDataWithResetAt.push(habit)
@@ -67,38 +59,22 @@ export const Habits = () => {
 
         if(e.target.checked) {
             const response = await fetchHabitCompletion(habitID, token);
-
-            if(!response.ok) {
-                if(response.status == "401") {
-                    navigate("/login-timeout");
-                } else if(response.status == 409) {
-                    return;
-                }
-                navigate("/internal-server-error");
-            };
-
+            const responseJSON = await response.json();
+            handleResponseError(response, responseJSON, navigate);
         } else {
             const response = await fetchUncompleteHabit(habitID, token);
-
-            if(!response.ok) {
-                if(response.status == 401) {
-                    navigate("/login-timeout");
-                };
-                navigate("/");
-            };
+            const responseJSON = await response.json();
+            handleResponseError(response, responseJSON, navigate);
         };
     };
 
     const getClosestResetTime = async (resetAt, completed) => {
         const response = await fetchGetUNIXFromMidnight(token);
-        if(!response.ok) {
-            if(response.status == 401) {
-                navigate("login");
-            };
-            navigate("/internal-server-error");
-        };
-        const data = await response.json();
-        const UNIXFromMidnight = Number(data.UNIX_time);
+        const responseJSON = await response.json();
+
+        handleResponseError(response, responseJSON, navigate);
+
+        const UNIXFromMidnight = Number(responseJSON.UNIX_time);
 
         let requiredWindow = null;
         let resetAtKeys = Object.keys(resetAt);

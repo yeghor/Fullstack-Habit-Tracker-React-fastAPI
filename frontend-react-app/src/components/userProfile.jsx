@@ -4,6 +4,7 @@ import { TokenContext } from "../tokenContext";
 import { fetchGetUserProfile } from "../api_fetching/urlParserMainFucntionality";
 import NavBar from "./navBar";
 import { useNavigate } from "react-router";
+import { handleResponseError } from "../utils/handleResponse";
 
 const UserProfile = () => {
     const [ token, setToken ] = useContext(TokenContext);
@@ -17,16 +18,11 @@ const UserProfile = () => {
             setLoading(true)
             try {
                 const response = await fetchGetUserProfile(token);
+                const reponseJSON = await response.json();
 
-                if(!response.ok) {
-                    if(response.status == 401) {
-                        navigate("/login");
-                    };
-                    navigate("/internal-server-error");
-                };
-                const data = await response.json();
-                console.log(data)
-                setProfile(data);
+                await handleResponseError(response, reponseJSON, navigate);
+
+                setProfile(reponseJSON);
             } finally {
                 setLoading(false)
             }
