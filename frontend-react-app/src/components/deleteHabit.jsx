@@ -4,6 +4,7 @@ import { TokenContext } from "../tokenContext";
 import { fetchDeleteHabit } from "../api_fetching/urlParserMainFucntionality";
 import "./confirm-modal.css"
 import { useNavigate } from "react-router";
+import { handleResponseError } from "../utils/handleResponse";
 
 const DeleteHabit = (props) => {
     const navigate = useNavigate()
@@ -14,16 +15,11 @@ const DeleteHabit = (props) => {
         e.preventDefault();
 
         const response = await fetchDeleteHabit(props.habit.habit_id, token);
-        
-        if(!response.ok) {
-            const responseJSON = await response.json();
-            console.error(responseJSON.detail);
+        const reponseJSON = response.json();
 
-            if(response.status == 401) {
-                navigate("/login");
-            };
-            navigate("/internal-server-error");
-        };
+        handleResponseError(response, reponseJSON, navigate);
+        
+
         let updatedHabits = [...props.habits];
         delete updatedHabits[props.index];
         props.setHabits(updatedHabits);

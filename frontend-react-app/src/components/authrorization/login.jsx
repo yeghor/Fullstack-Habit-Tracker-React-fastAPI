@@ -4,6 +4,7 @@ import { TokenContext } from "../../tokenContext";
 import { fetchLogin } from "../../api_fetching/urlParserAuthorization";
 import {verifyUsernameLength, verifyEmail, verifyPasswordLength} from "../../utils/verifyData"
 import { useNavigate } from "react-router"
+import { handleResponseError } from "../../utils/handleResponse";
 
 const Login = () => {
     let navigate = useNavigate();
@@ -29,18 +30,12 @@ const Login = () => {
         };
 
         try {
-            const response = await fetchLogin(username, password, email)
-            
-            if(!response.ok) {
-                const responseJSON = await response.json()
-                setErrorMessage(responseJSON.detail);
-                return;
-            };
+            const response = await fetchLogin(username, password, email);
+            const responseJSON = await response.json();
 
-            const data = await response.json();
+            handleResponseError(response, responseJSON, navigate, "/");
         
-            setToken(data.token);
-            navigate("/")
+            setToken(responseJSON.token);
         } catch (err) {
             console.error("Error while logging in ", err);
         };

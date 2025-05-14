@@ -33,18 +33,11 @@ const AddHabitWindow = (props) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try {
-            const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
-            if(!response.ok) {
-                const responseJSON = await response.json();
-                console.error(responseJSON.detail);
-                navigate("/internal-server-error");
-            }
-            props.setLoadHabits(!props.loadHabits);
-        } catch(err) {
-            console.error(err)
-            navigate("/internal-server-error");
-        }
+        const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
+        const reponseJSON = response.json();
+        handleResponseError(response, reponseJSON, navigate);
+
+        props.setLoadHabits(!props.loadHabits);
 
         props.toggle();
     };

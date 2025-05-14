@@ -4,6 +4,7 @@ import { TokenContext } from "../../tokenContext";
 import { fetchRegister } from "../../api_fetching/urlParserAuthorization";
 import {verifyUsernameLength, verifyEmail, verifyPasswordLength} from "../../utils/verifyData"
 import { useNavigate } from "react-router"
+import { handleResponseError } from "../../utils/handleResponse";
 
 const Register = () => {
     let navigate = useNavigate();
@@ -29,17 +30,12 @@ const Register = () => {
         };
 
         try {
-            const response = await fetchRegister(username, password, email)
-            if(!response.ok) {
-                const responseJSON = await response.json()
-                setErrorMessage(responseJSON.detail);
-                return;
-            };
+            const response = await fetchRegister(username, password, email);
+            const responseJSON = await response.json();
 
-            const data = await response.json();
+            handleResponseError(response, responseJSON, navigate, "/")
         
-            setToken(data.token);
-            navigate("/")
+            setToken(responseJSON.token);
         } catch (err) {
             setErrorMessage(err)
             console.error("Error while trying to register ", err);

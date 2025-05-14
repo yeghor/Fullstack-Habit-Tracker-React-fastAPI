@@ -3,14 +3,18 @@ import { useContext, useState } from "react";
 import { fetchLogout } from "../../api_fetching/urlParserAuthorization";
 import { TokenContext } from "../../tokenContext";
 import { useNavigate } from "react-router";
+import { handleResponseError } from "../../utils/handleResponse";
 
 const Logout = () => {
     const [token, setToken] = useContext(TokenContext);
     const navigate = useNavigate();
 
     const clickLogoutHandler = () => {
-        fetchLogout(token, setToken);
-        navigate("/")
+        const logout = async () => {
+            await fetchLogout(token, setToken);
+            navigate("/");
+        }
+        logout() ;      
     };
 
     return(

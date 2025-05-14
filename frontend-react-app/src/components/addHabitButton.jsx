@@ -8,7 +8,6 @@ const AddHabitButton = (props) => {
     const [ seen, setSeen ] = useState(false);
 
     const togglePop = (e) => {
-        console.log("SET SEEN")
         setSeen(!seen);
     };
 

@@ -35,7 +35,6 @@ async def register(
     email: Annotated[str, Body(title="Your E-mail")],
     db: Session = Depends(get_db),
 ) -> TokenSchema:
-
     verify_credentials(username=username, email=email)
 
     joined_at = datetime.datetime.now()
