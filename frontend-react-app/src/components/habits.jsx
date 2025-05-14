@@ -14,7 +14,7 @@ export const Habits = () => {
     const navigate = useNavigate();
     const [token, setToken] = useContext(TokenContext);
     const [habits, setHabits] = useState([]);
-    const [loadHabits, setLoadHabits] = useState(false)
+    const [refreshHabits, setRefreshHabits] = useState(false)
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -38,7 +38,6 @@ export const Habits = () => {
                 }
 
                 const data = await response.json();
-                console.log("DATA!!", data)
 
                 let updatedDataWithResetAt = []
                 for(let i = 0; i < data.length; i++) {
@@ -58,7 +57,7 @@ export const Habits = () => {
         };
 
         fetchHabits();
-    }, [loadHabits, token, navigate, setToken]);
+    }, [refreshHabits, token, navigate, setToken]);
 
     const checkboxHandler = async (e, habitID, index) => {
         const updatedHabits = [...habits];
@@ -102,7 +101,8 @@ export const Habits = () => {
         const UNIXFromMidnight = Number(data.UNIX_time);
 
         let requiredWindow = null;
-        const resetAtKeys = Object.keys(resetAt);
+        let resetAtKeys = Object.keys(resetAt);
+        resetAtKeys = resetAtKeys.sort()
         for(let i = 0; i < resetAtKeys.length; i++) {
             let currentWindow = resetAtKeys[i];
             if(UNIXFromMidnight < Number(currentWindow)) {
@@ -127,10 +127,10 @@ export const Habits = () => {
                 <NavBar />
 
                 <h1>Your Habits</h1>
-                <AddHabitButton loadHabits={loadHabits} setLoadHabits={setLoadHabits}/>
+                <AddHabitButton loadHabits={refreshHabits} setLoadHabits={setRefreshHabits}/>
                 
                 <div className="container">
-                    <button className="load-button" onClick={() => setLoadHabits(!loadHabits)}>Reload Habits</button>
+                    <button className="load-button" onClick={() => setRefreshHabits(!refreshHabits)}>Reload Habits</button>
                 </div>
 
                 {loading ? <h3>Loading...</h3> : 
@@ -142,7 +142,7 @@ export const Habits = () => {
                                     <h3>{habit.habit_name}</h3>
                                     <p>Index: {index}</p>
                                     <p>{habit.habit_desc}</p>
-                                    <p>{habit.resetAt}</p>
+                                    <p>Reset in: {habit.resetAt}</p>
                                     <label>
                                         Mark as completed:
                                         <input

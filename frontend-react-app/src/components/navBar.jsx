@@ -12,6 +12,8 @@ const NavBar = () => {
         return(
             <nav>
                 <p>NavBar</p>
+                <Link to="/">Go Home</Link>
+                <Link to="/user-profile">Profile</Link>
                 <Logout/>
             </nav>
         );
@@ -19,6 +21,7 @@ const NavBar = () => {
     return(
         <nav>
             <p>NavBar</p>
+            <Link to="/">Go Home</Link>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
         </nav>

@@ -9,7 +9,8 @@ import { TokenContext } from './tokenContext.jsx';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 import { Habits } from './components/habits.jsx';
 import LoginTimeOut from './components/loginTimeout.jsx';
-
+import UserProfile from './components/userProfile.jsx';
+import InternalServerError from './components/serverInternalError.jsx';
 
 function Main() {
     const [token , setToken] = useState(() => { return localStorage.getItem("token")});
@@ -32,8 +33,9 @@ function Main() {
                     <Route path='/login' element={<Login />} />
                     <Route path='/register' element={<Register />} />
                     <Route path='/login-timeout' element={<LoginTimeOut />} />
-                    <Route path='/internal-server-error' element={<div>500 INTERNAL SERVER ERROR</div>} />
-                </Routes>
+                    <Route path='/internal-server-error' element={<InternalServerError />} />
+                    <Route path='/user-profile' element={<UserProfile />} />
+                </Routes> 
             </TokenContext.Provider>
         </BrowserRouter>
     
