@@ -4,6 +4,7 @@ import "./addHabitPop.css"
 import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality";
 import { TokenContext } from "../tokenContext";
 import { useNavigate } from "react-router";
+import { handleResponseError } from "../utils/handleResponse";
 
 const AddHabitWindow = (props) => {
     const navigate = useNavigate();

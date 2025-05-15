@@ -1,7 +1,7 @@
 import React, { use } from "react";
 import { loginURL, registerURL, logoutURL } from "./urls";
 
-export async function fetchLogin(username, password, email) {
+export async function fetchLogin(username, password) {
     const response = await fetch(loginURL, {
         method: "POST",
         headers: {
@@ -10,7 +10,6 @@ export async function fetchLogin(username, password, email) {
         body: JSON.stringify({
             "username": username,
             "password": password,
-            "email": email
         }),
     });
     return response

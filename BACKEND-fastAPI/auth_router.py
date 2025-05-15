@@ -100,25 +100,23 @@ async def login(
     password: Annotated[
         str, Body(title="Strong password", min_length=8, max_length=30)
     ],  
-    email: Annotated[str, Body(title="Your E-mail")],
     db: Session = Depends(get_db),
 ) -> TokenSchema:
     timestamp = datetime.datetime.now()
     timestamp_unix = round(timestamp.timestamp())
 
-    verify_credentials(username=username, email=email)
 
     try:
         potential_user: Users = (
             db.query(Users)
-            .filter(Users.username == username, Users.email == email)
+            .filter(Users.username == username)
             .first()
         )
     except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+        raise HTTPException(status_code=500, detail="Error while working with database")
 
     if not potential_user:
-        raise HTTPException(status_code=401, detail="This user doesn't exist")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
     if not password_handling.check_password(
         password, potential_user.hashed_password.encode("utf-8")
