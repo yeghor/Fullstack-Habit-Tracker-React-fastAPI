@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { TokenContext } from "../tokenContext";
 import { Link } from "react-router-dom";
 import NavBar from "./navBar";
+import "../index.css"
 
 function MainPage() {
     const [token, setToken] = useContext(TokenContext);
@@ -22,9 +23,9 @@ function MainPage() {
                 <h1>{token}</h1>
                 <NavBar />
                 <h2>To start your journey. Please, Sign up</h2>
-                <div>
+                <div >
                     <p>Already have an account?</p>
-                    <Link to="/register">Register</Link>                    
+                    <Link>Register</Link>                                    
                 </div>
                 <div>
                     <Link to="/login">Login</Link>
