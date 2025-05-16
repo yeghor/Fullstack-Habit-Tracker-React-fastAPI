@@ -19,7 +19,7 @@ const Logout = () => {
 
     return(
         <div>
-            <button onClick={clickLogoutHandler}>Logout</button>
+            <button className="block py-2 px-3 text-black" onClick={clickLogoutHandler}>Logout</button>
         </div>
     );
 };

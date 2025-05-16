@@ -11,7 +11,6 @@ function MainPage() {
     if(token) {
         return (
             <div>
-                <h1>{token}</h1>
                 <NavBar />
                 <h2>Hello. Begin using our app!</h2>
                 <Link to="/habits">Go to habits</Link>
@@ -20,12 +19,11 @@ function MainPage() {
     } else {
         return (
             <div>
-                <h1>{token}</h1>
                 <NavBar />
                 <h2>To start your journey. Please, Sign up</h2>
                 <div >
                     <p>Already have an account?</p>
-                    <Link>Register</Link>                                    
+                    <Link to="/register">Register</Link>                                    
                 </div>
                 <div>
                     <Link to="/login">Login</Link>
