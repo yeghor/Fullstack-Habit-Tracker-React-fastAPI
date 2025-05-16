@@ -12,7 +12,7 @@ from authorization_utils import (
     authorize_token,
     verify_credentials,
 )
-from db_utils import get_db
+from db_utils import get_db, get_merged_user
 from authorization_utils import get_user_depends
 from sqlalchemy.exc import SQLAlchemyError
 import time
@@ -121,7 +121,7 @@ async def login(
     if not password_handling.check_password(
         password, potential_user.hashed_password.encode("utf-8")
     ):
-        raise HTTPException(status_code=409, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
     try:
         potential_jwt: JWTTable = (
@@ -188,44 +188,36 @@ async def get_user_profile(
 
 @auth_router.post("/change_username")
 async def change_username(
-    new_username = Annotated[str, Body(title="New usernaname", min_length=3, max_length=50)],
+    new_username: Annotated[str, Body(title="New usernaname", min_length=3, max_length=50)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ):
+    user = get_merged_user(user=user, db=db)
+
     if user.username == new_username:
-        raise HTTPException(
-            status_code=400, detail="New username can't be same as old"
-            )
+        raise HTTPException(status_code=400, detail="New username can't be same as old")
     
     try:
         user.username = new_username
         db.commit()
     except SQLAlchemyError:
-        raise HTTPException(
-            status_code=500, detail="Error while working with database"
-        )
+        raise HTTPException(status_code=500, detail="Error while working with database")
 
 @auth_router.post("/change_password")
 async def change_password(
-    old_password =  Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
-    new_password = Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
+    new_password: Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):  
-    if not password_handling.check_password(entered_pass=old_password, saved_pass=user.hashed_password):
-        raise HTTPException(
-            status_code=401, detail="Old and new password didn't match"
-        )
+    user = get_merged_user(user=user, db=db)
     
     try:
         hashed_new_password: bytes = password_handling.hash_password(raw_password=new_password)
-    except SQLAlchemyError:
-        raise HTTPException(
-            status_code=500, detail="Error while hashing password"
-            )
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error while hashing password")
 
     try:
-        user.hash_password = hashed_new_password
+        user.hashed_password = hashed_new_password.decode("utf-8")
         db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while working with database")
