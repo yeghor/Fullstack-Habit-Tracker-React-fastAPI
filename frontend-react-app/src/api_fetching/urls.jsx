@@ -6,6 +6,8 @@ export const loginURL = `${BASE_URL}/login`;
 export const registerURL = `${BASE_URL}/register`;
 export const logoutURL = `${BASE_URL}/logout`;
 export const getUserProfileURL = `${BASE_URL}/get_user_profile`;
+export const changeUsernameURL = `${BASE_URL}/change_username`;
+export const changePasswordURL = `${BASE_URL}/change_pasword`;
 
 // MAIN FUNCTIONALITY
 export const addHabitURL = `${BASE_URL}/add_habit`;

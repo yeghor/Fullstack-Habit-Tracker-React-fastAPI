@@ -13,7 +13,6 @@ const Login = () => {
 
     const [username, setUsername] = useState(null)
     const [password, setPassword] = useState(null)
-    const [email, setEmail] = useState(null)
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -21,16 +20,13 @@ const Login = () => {
         if(!verifyUsernameLength(username)) {
             setErrorMessage("Invalid username. Length must be from 3 to 50.");
             return
-        } else if(!verifyEmail(email)) {
-            setErrorMessage("Invalid Email. Must Contain @ and .");
-            return
         } else if(!verifyPasswordLength(password)) {
             setErrorMessage("Password length must be at least 8.");
             return
         };
 
         try {
-            const response = await fetchLogin(username, password, email);
+            const response = await fetchLogin(username, password);
             const responseJSON = await response.json();
 
             handleResponseError(response, responseJSON, navigate, "/");
@@ -48,7 +44,6 @@ const Login = () => {
             <form onSubmit={handleLogin}>
                 <input onChange={(e) => {setUsername(e.target.value)}} type="text" placeholder="Username" required/>
                 <input onChange={(e) => {setPassword(e.target.value)}} type="password" placeholder="Password" required/>
-                <input onChange={(e) => {setEmail(e.target.value)}} type="email" placeholder="Email" required/>
                 <button type="submit">Login</button>
             </form>
         </div>

@@ -1,7 +1,42 @@
 import React, { use } from "react";
-import { loginURL, registerURL, logoutURL } from "./urls";
+import {
+    loginURL,
+    registerURL,
+    logoutURL,
+    changePasswordURL,
+    changeUsernameURL,
+    } from "./urls";
 
-export async function fetchLogin(username, password, email) {
+export async function fetchChangePassword(oldPassword, newPassword, token) {
+    const response = fetch(changePasswordURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "old-password": oldPassword,
+            "new-password": newPassword,
+            "token": token,
+        })
+    });
+    return response;
+};
+
+export async function fetchChangeUsername(newUsername, token) {
+    const response = fetch(changeUsernameURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "new-usename": newUsername,
+            "token": token,
+        })
+    });
+    return response;
+};
+
+export async function fetchLogin(username, password) {
     const response = await fetch(loginURL, {
         method: "POST",
         headers: {
@@ -10,7 +45,6 @@ export async function fetchLogin(username, password, email) {
         body: JSON.stringify({
             "username": username,
             "password": password,
-            "email": email
         }),
     });
     return response
