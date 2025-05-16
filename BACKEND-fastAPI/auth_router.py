@@ -190,7 +190,7 @@ async def get_user_profile(
 
 @auth_router.post("/change_username")
 async def change_username(
-    new-username = Annotated[str, Body(title="New usernaname", min_length=3, max_length=50)],
+    new_username = Annotated[str, Body(title="New usernaname", min_length=3, max_length=50)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ):
@@ -209,8 +209,8 @@ async def change_username(
 
 @auth_router.post("/change_password")
 async def change_password(
-    old-password =  Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
-    new-password = Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
+    old_password =  Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
+    new_password = Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):  
