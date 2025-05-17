@@ -19,27 +19,32 @@ export const Habits = () => {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if(!token) {
-        navigate("/login");
-        };
-
         const fetchHabits = async () => {
+            if(!token) {
+                navigate("/register");
+            };
+
             setLoading(true);
             try {
                 const response = await fetchGetHabits(token);
                 const responseJSON = await response.json();
-
-                handleResponseError(response, responseJSON, navigate);
-
-                let updatedDataWithResetAt = []
-                for(let i = 0; i < responseJSON.length; i++) {
-                    let habit = responseJSON[i]
-                    const timeString = await getClosestResetTime(habit.reset_at, habit.completed);
-                    habit.resetAt = timeString;
-                    updatedDataWithResetAt.push(habit)
-                };
-
-                setHabits(updatedDataWithResetAt);
+                if(response.ok) {
+                    let updatedDataWithResetAt = []
+                    for(let i = 0; i < responseJSON.length; i++) {
+                        let habit = responseJSON[i]
+                        const timeString = await getClosestResetTime(habit.reset_at, habit.completed);
+                        habit.resetAt = timeString;
+                        updatedDataWithResetAt.push(habit)
+                    };
+                    setHabits(updatedDataWithResetAt);
+                } else {
+                    if(response.status === 401) {
+                        navigate("/register")
+                        return
+                    } else {
+                        handleResponseError(response, responseJSON, navigate)
+                    }
+                }
             } catch (err) {
                 console.error("Error fetching habits:", err);
                 navigate("/internal-server-error");
@@ -86,7 +91,6 @@ export const Habits = () => {
                 break
             };
         };
-        console.log(requiredWindow)
         if(!requiredWindow) {
             if(completed) {
                 return "You're all done! Check your habits tomorrow."
