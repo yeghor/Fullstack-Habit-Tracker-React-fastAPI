@@ -24,9 +24,14 @@ const NavBar = () => {
                     className="inline-block py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition">Habits</Link>
                 </li>
                 {token ? 
-                    <li>
-                        <Logout />
-                    </li>
+                    <>
+                        <li>
+                            <Link className="block py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition" to="/user-profile">Profile</Link> 
+                        </li>                      
+                        <li>
+                            <Logout />
+                        </li>
+                    </>
                 :
                 <>
                     <li>

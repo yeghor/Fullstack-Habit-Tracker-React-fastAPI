@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useContext } from "react";
-import "./addHabitPop.css"
+import "../index.css"
 import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality";
 import { TokenContext } from "../tokenContext";
 import { useNavigate } from "react-router";

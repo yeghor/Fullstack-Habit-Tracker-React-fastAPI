@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { useState } from "react";
 import { TokenContext } from "../tokenContext";
 import { fetchDeleteHabit } from "../api_fetching/urlParserMainFucntionality";
-import "./confirm-modal.css"
+import "../index.css"
 import { useNavigate } from "react-router";
 import { handleResponseError } from "../utils/handleResponse";
 
