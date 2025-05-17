@@ -10,6 +10,7 @@ const DeleteHabit = (props) => {
     const navigate = useNavigate()
     const [ token, setToken ] = useContext(TokenContext);
     const [pop, setPop] = useState(false);
+    const habit = props.habit
 
     const handleDelete = async (e) => {
         e.preventDefault();
@@ -27,27 +28,43 @@ const DeleteHabit = (props) => {
     };
 
     return(
-        <div>
-            <button className="confirm-delete-btn" type="confirm" onClick={() => setPop(!pop)}>Delete</button>
+    <div className="relative inline-block">
+      <button
+        className="m-2 px-2 py-1 bg-gray-500 text-white rounded hover:bg-red-600 transition"
+        type="button"
+        onClick={() => setPop(!pop)}
+      >
+        Delete
+      </button>
 
-            {pop && ( 
-                <div className="confirm-delete-overlay">
-                    <div className="confirm-delete-modal">
-                        <h2 className="confirm-delete-modal-title">Are you sure you want to delete:</h2>
-                        <div className="FUTURE HABIT CARD">
-                            <h4 className="confirm-delete-modal-text">
-                                {props.habit.habit_name}
-                            </h4>
-                            <p className="confirm-delete-modal-text">
-                                {props.habit.habit_desc}
-                            </p>
-                        </div>
-                        <button onClick={handleDelete} className="confirm-delete-btn confirm">Delete</button>
-                        <button onClick={() => setPop(false)} className="confirm-delete-btn cancel">Cancel</button>
-                    </div>
-                </div>
-            )}
+      {pop && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-10 z-50 bg-white border border-gray-300 rounded-lg shadow-xl w-64 p-4 animate-fadeIn">
+            <h2 className="text-base font-bold text-gray-800 mb-2 text-center">
+                Are you sure you want to delete:
+            </h2>
+            <div className="mb-2 rounded bg-gray-100 p-2">
+                <h4 className="font-semibold text-gray-700 text-center text-sm">
+                    {habit.habit_name}
+            </h4>
+            <p className="text-gray-600 text-center text-xs">{habit.habit_desc}</p>
         </div>
+            <div className="flex gap-2 mt-2">
+            <button
+              onClick={handleDelete}
+              className="flex-1 py-1 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition text-sm"
+            >
+                 Delete
+            </button>
+            <button
+                onClick={() => setPop(false)}
+                className="flex-1 py-1 rounded bg-gray-300 text-gray-700 font-semibold hover:bg-gray-400 transition text-sm"
+            >
+                Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
     )
     
 };

@@ -106,10 +106,10 @@ export const Habits = () => {
         <div>
             <NavBar />
             <main className="container mx-auto px-4 md:px-8 pt-6">
-                <div className="flex justify-start mb-4 gap-5">
+                <div className="flex justify-center mb-4 gap-5">
                     <AddHabitButton loadHabits={refreshHabits} setLoadHabits={setRefreshHabits} />
                     <button
-                        className="load-button text-white bg-blue-600 px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+                        className="py-2 px-4 load-button  bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition"
                         onClick={() => setRefreshHabits(!refreshHabits)}
                         >
                         Reload Habits

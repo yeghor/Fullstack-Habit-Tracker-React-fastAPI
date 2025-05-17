@@ -72,4 +72,4 @@ def test_habits():
     response_get_habits = client.get("/get_habits", headers={"token": token})
     get_habits_dict = response_get_habits.json()
     assert response_get_habits.status_code == 200
-
+    

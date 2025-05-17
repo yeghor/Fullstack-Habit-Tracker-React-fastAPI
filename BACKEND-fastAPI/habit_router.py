@@ -119,7 +119,6 @@ async def habit_completion(
     from_midnight_unix = get_seconds_from_midnight()
     reset_at = habit.reset_at
     reset_at_sorted = dict(sorted(reset_at.items()))
-
     for time, flag in reset_at_sorted.items():
         if from_midnight_unix > int(time) and not flag:
             reset_at_sorted[time] = True
