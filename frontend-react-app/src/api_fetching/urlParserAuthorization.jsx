@@ -7,17 +7,14 @@ import {
     changeUsernameURL,
     } from "./urls";
 
-export async function fetchChangePassword(oldPassword, newPassword, token) {
+export async function fetchChangePassword(newPassword, token) {
     const response = fetch(changePasswordURL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            "token": "Bearer " + token
         },
-        body: JSON.stringify({
-            "old-password": oldPassword,
-            "new-password": newPassword,
-            "token": token,
-        })
+        body: JSON.stringify(newPassword)
     });
     return response;
 };
@@ -27,10 +24,10 @@ export async function fetchChangeUsername(newUsername, token) {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            "token": "Bearer" + token
         },
         body: JSON.stringify({
             "new-usename": newUsername,
-            "token": token,
         })
     });
     return response;

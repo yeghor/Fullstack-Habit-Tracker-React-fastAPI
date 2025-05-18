@@ -14,7 +14,16 @@ const UserProfile = () => {
     const [ token, setToken ] = useContext(TokenContext);
     const [ profile, setProfile ] = useState({});
     const [ refresh, setRefresh ] = useState(false);
-    const [ loading, setLoading ] = useState(false)
+    const [ loading, setLoading ] = useState(false);
+    const [ showChangeUsernameForm, setShowChangeUsernameForm ] = useState(false);
+    const [ showChangePasswordForm, setShowChangePasswordForm ] = useState(false);
+    const [ errorMessage, setErrorMessage ] = useState("");
+
+    const [ newPasswordFirst, setNewPasswordFirst ] = useState(null);
+    const [ newPasswordSecond, setNewPasswordSecond ] = useState(null);
+
+    const [ newUsername, setNewUsername ] = useState(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,11 +43,40 @@ const UserProfile = () => {
         fetchProfile();
     }, [refresh]);
 
-    const handleChangePassword = () => {
-    }
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        const fetchPass = async () => {
+            if(newPasswordFirst !== newPasswordSecond) {
+                setErrorMessage("Password didn't match");
+            };
 
-    const handleChangeUsername = () => {
-    }
+            try {
+                const response = await fetchChangePassword(newPasswordFirst, token);
+                const responseJSON = await response.json();
+                
+                if(response.status === 400) {
+                    console.log(responseJSON.detail)
+                    setErrorMessage(responseJSON.detail);
+                    return;
+                };
+                
+                handleResponseError(response, responseJSON, navigate);
+                
+                setRefresh(!refresh);
+                setShowChangePasswordForm(!showChangePasswordForm)
+                setErrorMessage("")
+            } catch (err) {
+                console.error(err)
+                navigate("internal-server-error");
+                return;
+            };            
+        };
+        fetchPass()
+    };
+
+    const handleChangeUsername = (e) => {
+        e.preventDefault();
+    };
 
     if(token) {
         return(
@@ -57,18 +95,117 @@ const UserProfile = () => {
                         </div>
                         <div className="flex flex-col gap-4 w-full mt-4">
                             <button
-                                onClick={handleChangePassword}
+                                onClick={() => setShowChangePasswordForm(!showChangePasswordForm)}
                                 className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
                                 Change Password
                             </button>
                             <button
-                                onClick={handleChangeUsername}
+                                onClick={() => setShowChangeUsernameForm(!showChangeUsernameForm)}
                                 className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
                                 Change Username
                             </button>
                         </div>
                     </div>
                 </div>
+                {showChangePasswordForm ?
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-lg sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
+                        <form className="space-y-6" onSubmit={handleChangePassword}>
+                            <div className="flex justify-end items-center">
+                                <button onClick={() => setShowChangePasswordForm(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
+                                    ✕
+                                </button>
+                            </div>
+
+                            <h5 className="text-xl font-medium text-gray-900 dark:text-white">
+                            Please, fill up form with new secure password
+                            </h5>
+                            {errorMessage && (
+                            <div>
+                                <p className="font-semibold text-red-600">{errorMessage}</p>
+                            </div>
+                            )}
+                            <div>
+                            <label htmlFor="passwordOne" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                New Password
+                            </label>
+                            <input
+                                onChange={(e) => setNewPasswordFirst(e.target.value)}
+                                type="password"
+                                name="passwordOne"
+                                id="passwordOne"
+                                placeholder="New Password"
+                                minLength="8"
+                                required
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                            />
+                            </div>
+                            <div>
+                            <label htmlFor="passwordTwo" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Confirm
+                            </label>
+                            <input
+                                onChange={(e) => setNewPasswordSecond(e.target.value)}
+                                type="password"
+                                name="passwordTwo"
+                                id="passwordTwo"
+                                placeholder="Confirm new password"
+                                minLength="8"
+                                required
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                            />
+                            </div>
+                            <button
+                            type="submit"
+                            className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            >
+                            Change Password
+                            </button>
+                        </form>
+                        </div>
+                    </div>
+                : null}
+            { showChangeUsernameForm ?
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-lg sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
+                    <form className="space-y-6" onSubmit={handleChangePassword}>
+                        <div className="flex justify-end items-center">
+                            <button onClick={() => setShowChangeUsernameForm(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
+                                ✕
+                            </button>
+                        </div>
+
+                        <h5 className="text-xl font-medium text-gray-900 dark:text-white">
+                        Please, fill up form with your new username
+                        </h5>
+                        {errorMessage && (
+                        <div>
+                            <p className="font-semibold text-red-600">{errorMessage}</p>
+                        </div>
+                        )}
+                        <label htmlFor="newUsername" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            New Username    
+                        </label>
+                        <input
+                            onChange={(e) => setNewUsername(e.target.value)}
+                            type="text"
+                            name="newUsername"
+                            id="newUsername"
+                            placeholder="New Username"
+                            minLength="3"
+                            required
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                        />
+                        <button
+                        type="submit"
+                        className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        >
+                        Change Username
+                        </button>
+                    </form>
+                    </div>
+                </div>                
+            : null}
             </div>
         );
     } else {

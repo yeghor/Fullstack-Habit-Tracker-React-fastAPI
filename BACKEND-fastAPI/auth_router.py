@@ -211,6 +211,9 @@ async def change_password(
 ):  
     user = get_merged_user(user=user, db=db)
     
+    if password_handling.check_password(new_password, user.hashed_password.encode("utf-8")):
+        raise HTTPException(status_code=400, detail="New password can't be same as current!")
+
     try:
         hashed_new_password: bytes = password_handling.hash_password(raw_password=new_password)
     except Exception:

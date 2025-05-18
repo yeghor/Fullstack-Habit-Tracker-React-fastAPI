@@ -3,6 +3,7 @@ from database import session_local
 from sqlalchemy.orm import Session
 import datetime
 from datetime import time
+from sqlalchemy.exc import SQLAlchemyError
 
 def reset_all_habits() -> None:
     db: Session = session_local()
@@ -34,11 +35,17 @@ def reset_potential_habit() -> None:
         habits = db.query(Habits).filter(Habits.completed == True)
         from_midnight_unix = get_seconds_from_midnight()
 
+        if not habits:
+            return
+
         for habit in habits:
             print(habit.habit_name)
             latest_completion: HabitCompletions = db.query(HabitCompletions).filter(
                 HabitCompletions.habit_id == habit.habit_id,
             ).order_by(HabitCompletions.completed_at.desc()).first()
+
+            if not latest_completion:
+                continue
 
             reset_at = habit.reset_at
             reset_at_sorted = dict(sorted(reset_at.items()))
@@ -54,8 +61,9 @@ def reset_potential_habit() -> None:
 
             if to_seconds_from_midnight(latest_completion.completed_at) > required_window:
                 continue
-
             habit.completed = False
+    except SQLAlchemyError:
+        raise SQLAlchemyError("Error while working with db in periodic task")
     finally:
         db.commit()
         db.close()
