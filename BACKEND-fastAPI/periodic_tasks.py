@@ -1,7 +1,8 @@
-from models import Habits, JWTTable
+from models import Habits, JWTTable, HabitCompletions
 from database import session_local
 from sqlalchemy.orm import Session
 import datetime
+from datetime import time
 
 def reset_all_habits() -> None:
     db: Session = session_local()
@@ -34,26 +35,36 @@ def reset_potential_habit() -> None:
         from_midnight_unix = get_seconds_from_midnight()
 
         for habit in habits:
+            print(habit.habit_name)
+            latest_completion: HabitCompletions = db.query(HabitCompletions).filter(
+                HabitCompletions.habit_id == habit.habit_id,
+            ).order_by(HabitCompletions.completed_at.desc()).first()
+
             reset_at = habit.reset_at
             reset_at_sorted = dict(sorted(reset_at.items()))
 
             required_window = None
-            for time, flag in reset_at_sorted.items():
-                if from_midnight_unix > int(time) and not flag:
+            for time, status in reset_at_sorted.items():
+                if from_midnight_unix > int(time):
+                    required_window = int(time)
                     reset_at_sorted[time] = True
-                    required_window = time
 
             if not required_window:
                 continue
 
-            reset_at_sorted[required_window] = True
-            habit.reset_at = reset_at_sorted
-            habit.completed = False
+            if to_seconds_from_midnight(latest_completion.completed_at) > required_window:
+                continue
 
-        db.commit()
+            habit.completed = False
     finally:
+        db.commit()
         db.close()
 
+def to_seconds_from_midnight(UNIX_time) -> int:
+    today = datetime.datetime.today().date()
+    today_UNIX_midnight = datetime.datetime.combine(today, time()).timestamp()
+
+    return UNIX_time - int(today_UNIX_midnight)
 
 def update_jwts():
     print("Periodic update_jwts habit called")

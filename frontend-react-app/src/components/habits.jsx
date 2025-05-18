@@ -103,67 +103,75 @@ export const Habits = () => {
 
     if(token) { 
         return (   
-        <div>
-            <NavBar />
-            <main className="container mx-auto px-4 md:px-8 pt-6">
-                <div className="flex justify-center mb-4 gap-5">
-                    <AddHabitButton loadHabits={refreshHabits} setLoadHabits={setRefreshHabits} />
-                    <button
-                        className="py-2 px-4 load-button  bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition"
-                        onClick={() => setRefreshHabits(!refreshHabits)}
-                        >
-                        Reload Habits
-                    </button>
-                </div>
-                {loading ? (
-                    <div className="flex justify-center items-center h-64">
-                        <p className="text-4xl font-bold">Loading...</p>
-                    </div>
-                ) : habits.length === 0 ? (
-                    <h3>No habits added yet</h3>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                    {habits.map((habit, index) =>
-                        habit && (
-                        <div
-                            key={habit.habit_id}
-                            className="bg-whiterounded-2xl shadow-lg p-6 flex flex-col justify-between w-full h-64 transition-transform hover:scale-105 hover:shadow-2xl border border-gray-400 rounded-lg"
-                        >
-                            <div>
-                            <h3 className="text-xl font-bold mb-2 truncate text-gray-900">{habit.habit_name}</h3>
-                            <p className="text-base mb-4 break-words text-gray-700">{habit.habit_desc}</p>
-                            <p className="text-xs mb-2 text-blue-700">{habit.resetAt}</p>
-                            </div>
-                            <div className="flex items-center justify-between mt-2">
-                            <label className="flex items-center space-x-2 text-sm select-none cursor-pointer">
-                                <span>Mark as completed:</span>
-                                <span className="relative">
-                                <input
-                                    type="checkbox"
-                                    checked={habit.completed}
-                                    onChange={(e) => checkboxHandler(e, habit.habit_id, index)}
-                                    className="peer appearance-none h-5 w-5 rounded-md border border-blue-400 bg-white checked:bg-blue-600 checked:border-blue-600 transition-colors duration-150 ease-in-out outline-none focus:ring-2 focus:ring-blue-400"
-                                />
-                                <svg
-                                    className="pointer-events-none absolute left-0 top-0 w-5 h-5 text-white opacity-0 peer-checked:opacity-100 transition"
-                                    viewBox="0 0 20 20"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="3"
-                                >
-                                    <path d="M6 10l3 3l5-5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                                </span>
-                            </label>
-                            <DeleteHabit setHabits={setHabits} habit={habit} habits={habits} index={index} />
-                            </div>
+            <div>
+                <NavBar />
+                <section className="bg-white dark:bg-gray-900 min-h-screen">
+                    <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-12">
+                        <div className="flex justify-center mb-8 gap-5">
+                            <AddHabitButton loadHabits={refreshHabits} setLoadHabits={setRefreshHabits} />
+                            <button
+                                className="py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition"
+                                onClick={() => setRefreshHabits(!refreshHabits)}
+                            >
+                                Reload Habits
+                            </button>
                         </div>
-                        )
-                    )}
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            {loading ? (
+                                <div className="flex justify-center items-center h-64">
+                                    <p className="text-4xl font-bold text-gray-800 dark:text-white">Loading...</p>
+                                </div>
+                            ) : habits.length === 0 ? (
+                                <h3 className="text-gray-500 text-xl text-center">No habits added yet</h3>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                    {habits.map((habit, index) =>
+                                        habit && (
+                                            <div>
+                                            <div
+                                                key={habit.habit_id}
+                                                className="bg-gray-50 rounded-2xl shadow p-6 flex flex-col justify-between w-full h-auto transition-transform hover:scale-105 hover:shadow-2xl border border-gray-200"
+                                            >
+                                                <div>
+                                                    <h3 className="text-xl font-bold mb-2 truncate text-gray-900">{habit.habit_name}</h3>
+                                                    <p className="text-base mb-2 break-words text-gray-700">{habit.habit_desc}</p>
+                                                    <p className="text-xs text-blue-700">{habit.resetAt}</p>
+                                                </div>
+                                                <div className="flex items-center justify-between mt-4">
+                                                    <label className="flex items-center space-x-2 text-sm select-none cursor-pointer">
+                                                        <span>Mark as completed:</span>
+                                                        <span className="relative">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={habit.completed}
+                                                                onChange={(e) => checkboxHandler(e, habit.habit_id, index)}
+                                                                className="peer appearance-none h-5 w-5 rounded-md border border-blue-400 bg-white checked:bg-blue-600 checked:border-blue-600 transition-colors duration-150 ease-in-out outline-none focus:ring-2 focus:ring-blue-400"
+                                                            />
+                                                            <svg
+                                                                className="pointer-events-none absolute left-0 top-0 w-5 h-5 text-white opacity-0 peer-checked:opacity-100 transition"
+                                                                viewBox="0 0 20 20"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth="3"
+                                                            >
+                                                                <path d="M6 10l3 3l5-5" strokeLinecap="round" strokeLinejoin="round" />
+                                                            </svg>
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div>
+                                                    <DeleteHabit setHabits={setHabits} habit={habit} habits={habits} index={index} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        )
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
-            </main>
-        </div>
+                </section>
+            </div>
     );
     } else {
         navigate("/login");

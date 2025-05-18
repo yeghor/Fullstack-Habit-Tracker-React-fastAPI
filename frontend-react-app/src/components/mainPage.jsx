@@ -22,7 +22,7 @@ function MainPage() {
                             <h1 class="mb-4 text-4xl font-bold tracking-tight leading-none text-gray-800 md:text-5xl lg:text-6xl dark:text-white">Build better days with our <span className="font-black text-zinc-900">Habit Tracker</span></h1>
                             <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400">We provide a convenient and safe interface for tracking habits and your own progress.</p>
                             <div class="flex flex-col mb-8 lg:mb-16 space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
-                                <a href="/habits" class="inline-flex justify-center items-center py-3 px-5 text-base font-semibold text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900">
+                                <a href="/habits" class="inline-flex justify-center items-center py-3 px-5 text-base font-semibold text-center text-white rounded-lg bg-blue-600 hover:bg-primary-800 hover:bg-blue-700 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900">
                                     Start
                                 </a>
                             </div>
