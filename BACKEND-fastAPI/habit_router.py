@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Body, Header, Depends, APIRouter
 from typing import Annotated, Dict, List
-from schemas import TokenSchema
+from schemas import TokenSchema, AddHabitSchema
 from uuid import uuid4
 import datetime
 from models import Users, JWTTable, Habits, HabitCompletions
@@ -29,25 +29,20 @@ XP_RANDOM_FACTOR = os.getenv("XP_RANDOM_FACTOR")
 
 @habit_router.post("/add_habit")
 async def add_habit(
-    habit_name: Annotated[str, Body(title="Habit name", min_length=3)],
-    habit_desc: Annotated[str, Body(title="Habit decs", min_length=3)],
-    reset_at: Annotated[
-        List[int],
-        Body(title="Resetting time in unix after midnight. SEPARATED BY SPACES"),
-    ],
+    habit: AddHabitSchema = Body(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> HabitSchema:
     await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
 
-    if not validate_string(habit_name) or not validate_string(habit_desc):
+    if not validate_string(habit.habit_name) or not validate_string(habit.habit_desc):
         raise HTTPException(status_code=400, detail="Invalid habit name or description")
-    if not validate_reset_time(reset_at):
+    if not validate_reset_time(habit.reset_at):
         raise HTTPException(status_code=400, detail="Invalid resetting time")
 
     reset_at_final = {}
-    for reset_time in reset_at:
+    for reset_time in habit.reset_at:
         reset_at_final[reset_time] = False
 
     habit_id = str(uuid4())
@@ -55,8 +50,8 @@ async def add_habit(
     try:
         new_habit = Habits(
             habit_id=habit_id,
-            habit_name=habit_name,
-            habit_desc=habit_desc,
+            habit_name=habit.habit_name,
+            habit_desc=habit.habit_desc,
             user_id=user.user_id,
             date_created=datetime.datetime.today(),
             reset_at=reset_at_final,

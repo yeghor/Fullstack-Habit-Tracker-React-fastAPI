@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Body, Header, Depends, APIRouter
 from typing import Annotated
-from schemas import TokenSchema, UserSchema
+from schemas import TokenSchema, UserSchema, RegisterSchema, LoginSchema, TokenProvidedSchema
 from GeneratingAuthUtils import jwt_token_handling, password_handling
 from uuid import uuid4
 import datetime
@@ -28,13 +28,11 @@ async def test() -> str:
 
 @auth_router.post("/register")
 async def register(
-    username: Annotated[str, Body(title="Username", min_length=3, max_length=50)],
-    password: Annotated[
-        str, Body(title="Strong password", min_length=8, max_length=30)
-    ],
-    email: Annotated[str, Body(title="Your E-mail")],
+    user_data: RegisterSchema = Body(...),
     db: Session = Depends(get_db),
 ) -> TokenSchema:
+    username, password, email = user_data.username, user_data.password, user_data.email
+
     verify_credentials(username=username, email=email)
 
     joined_at = datetime.datetime.now()
@@ -96,10 +94,7 @@ async def register(
 
 @auth_router.post("/login")
 async def login(
-    username: Annotated[str, Body(title="Username", min_length=3, max_length=50)],
-    password: Annotated[
-        str, Body(title="Strong password", min_length=8, max_length=30)
-    ],  
+    user_data: LoginSchema = Body(...),
     db: Session = Depends(get_db),
 ) -> TokenSchema:
     timestamp = datetime.datetime.now()
@@ -109,7 +104,7 @@ async def login(
     try:
         potential_user: Users = (
             db.query(Users)
-            .filter(Users.username == username)
+            .filter(Users.username == user_data.username)
             .first()
         )
     except SQLAlchemyError:
@@ -119,7 +114,7 @@ async def login(
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     if not password_handling.check_password(
-        password, potential_user.hashed_password.encode("utf-8")
+        user_data.password, potential_user.hashed_password.encode("utf-8")
     ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
@@ -155,10 +150,10 @@ async def login(
 
 @auth_router.post("/logout")
 async def loogut(
-    token = Header(title="Temprorary authorization token"),
+    token_dict: TokenProvidedSchema = Body(..., example={"token": "Bearer ..."}),
     db: Session = Depends(get_db),
 ) -> None:
-    token = prepare_authorization_token(authorization=token)
+    token = prepare_authorization_token(authorization=token_dict.token)
 
     try:
         jwt_entry: JWTTable = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()

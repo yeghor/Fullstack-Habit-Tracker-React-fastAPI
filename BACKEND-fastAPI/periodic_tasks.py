@@ -29,17 +29,14 @@ def get_seconds_from_midnight() -> int:
 
 
 def reset_potential_habit() -> None:
-    print("Periodic reset_potential habit called")
     db: Session = session_local()
     try:
-        habits = db.query(Habits).filter(Habits.completed == True)
+        habits = db.query(Habits).filter(Habits.completed == True).all()
         from_midnight_unix = get_seconds_from_midnight()
-
         if not habits:
             return
 
         for habit in habits:
-            print(habit.habit_name)
             latest_completion: HabitCompletions = db.query(HabitCompletions).filter(
                 HabitCompletions.habit_id == habit.habit_id,
             ).order_by(HabitCompletions.completed_at.desc()).first()
@@ -63,7 +60,7 @@ def reset_potential_habit() -> None:
                 continue
             habit.completed = False
     except SQLAlchemyError:
-        raise SQLAlchemyError("Error while working with db in periodic task")
+        raise SQLAlchemyError("Error while working with db")
     finally:
         db.commit()
         db.close()
@@ -75,7 +72,6 @@ def to_seconds_from_midnight(UNIX_time) -> int:
     return UNIX_time - int(today_UNIX_midnight)
 
 def update_jwts():
-    print("Periodic update_jwts habit called")
     db = session_local()
     try:
         timestamp = datetime.datetime.now()

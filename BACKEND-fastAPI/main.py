@@ -10,6 +10,7 @@ from habit_router import habit_router
 from periodic_tasks import update_jwts, reset_all_habits, reset_potential_habit
 from fastapi.middleware.cors import CORSMiddleware
 from utils_router import utils_router
+from sqlalchemy.exc import SQLAlchemyError
 
 load_dotenv()
 

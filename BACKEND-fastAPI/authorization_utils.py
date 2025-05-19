@@ -10,6 +10,7 @@ from GeneratingAuthUtils.jwt_token_handling import extract_payload
 from fastapi import Header
 from sqlalchemy.exc import SQLAlchemyError
 from jwt.exceptions import PyJWTError
+from schemas import TokenProvidedSchema
 
 load_dotenv()
 
@@ -43,10 +44,10 @@ def verify_credentials(username, email):
         raise HTTPException(status_code=400, detail="Invalid Email")
 
 
-def get_user_depends(token=Header(title="Authorization token")) -> Users:
+def get_user_depends(token: TokenProvidedSchema = Header(...)) -> Users:
     db = session_local()
     try:
-        token = prepare_authorization_token(token)
+        token = prepare_authorization_token(token.token)
         authorize_token(token)
         try:
             payload = extract_payload(token)
