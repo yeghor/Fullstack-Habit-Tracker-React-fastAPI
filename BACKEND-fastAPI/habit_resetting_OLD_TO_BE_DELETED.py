@@ -20,8 +20,5 @@ def reset_habit(habit: Habits = None) -> None:
     print(differences)
     if differences:
         min_index = min(differences, key=differences.get)
-        
-        
-
     else:
         return None

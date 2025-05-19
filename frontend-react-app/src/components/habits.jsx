@@ -65,11 +65,11 @@ export const Habits = () => {
         if(e.target.checked) {
             const response = await fetchHabitCompletion(habitID, token);
             const responseJSON = await response.json();
-            handleResponseError(response, responseJSON, navigate);
+            handleResponseError(response, responseJSON, navigate, setToken);
         } else {
             const response = await fetchUncompleteHabit(habitID, token);
             const responseJSON = await response.json();
-            handleResponseError(response, responseJSON, navigate);
+            handleResponseError(response, responseJSON, navigate, setToken);
         };
     };
 
@@ -77,7 +77,7 @@ export const Habits = () => {
         const response = await fetchGetUNIXFromMidnight(token);
         const responseJSON = await response.json();
 
-        handleResponseError(response, responseJSON, navigate);
+        handleResponseError(response, responseJSON, navigate, setToken);
 
         const UNIXFromMidnight = Number(responseJSON.UNIX_time);
 

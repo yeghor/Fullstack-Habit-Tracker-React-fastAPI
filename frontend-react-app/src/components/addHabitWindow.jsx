@@ -36,7 +36,7 @@ const AddHabitWindow = (props) => {
 
         const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
         const reponseJSON = response.json();
-        handleResponseError(response, reponseJSON, navigate);
+        handleResponseError(response, reponseJSON, navigate, setToken);
 
         props.setLoadHabits(!props.loadHabits);
 

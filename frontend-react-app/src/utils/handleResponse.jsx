@@ -1,6 +1,7 @@
-export const handleResponseError = async (response, responseJSON, navigate, navigateTo) => {
+export const handleResponseError = async (response, responseJSON, navigate, setToken, navigateTo,) => {
     if(!response.ok) {
         if(response.status === 401) {
+            setToken()
             navigate("/register");
             return
         };

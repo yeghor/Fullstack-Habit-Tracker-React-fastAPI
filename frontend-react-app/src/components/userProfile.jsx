@@ -33,7 +33,7 @@ const UserProfile = () => {
                 const response = await fetchGetUserProfile(token);
                 const reponseJSON = await response.json();
 
-                handleResponseError(response, reponseJSON, navigate);
+                handleResponseError(response, reponseJSON, navigate, setToken);
 
                 setProfile(reponseJSON);
             } finally {
@@ -60,7 +60,7 @@ const UserProfile = () => {
                     return;
                 };
                 
-                handleResponseError(response, responseJSON, navigate);
+                handleResponseError(response, responseJSON, navigate, setToken);
                 
                 setRefresh(!refresh);
                 setShowChangePasswordForm(!showChangePasswordForm)

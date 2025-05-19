@@ -47,7 +47,7 @@ const Register = () => {
                 return
             }
 
-            handleResponseError(response, responseJSON, navigate, "/")
+            handleResponseError(response, responseJSON, navigate, setToken, "/") 
         
             setToken(responseJSON.token);
         } catch (err) {

@@ -18,7 +18,7 @@ const DeleteHabit = (props) => {
         const response = await fetchDeleteHabit(props.habit.habit_id, token);
         const reponseJSON = response.json();
 
-        handleResponseError(response, reponseJSON, navigate);
+        handleResponseError(response, reponseJSON, navigate, setToken);
         
 
         let updatedHabits = [...props.habits];
