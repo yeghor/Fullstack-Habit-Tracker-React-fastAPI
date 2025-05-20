@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Body, Header, Depends, APIRouter
 from typing import Annotated, Dict, List
-from schemas import TokenSchema, AddHabitSchema
+from schemas import TokenSchema, AddHabitSchema, HabitIdProvidedSchema  
 from uuid import uuid4
 import datetime
 from models import Users, JWTTable, Habits, HabitCompletions
@@ -33,7 +33,6 @@ async def add_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> HabitSchema:
-    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
 
     if not validate_string(habit.habit_name) or not validate_string(habit.habit_desc):
@@ -71,21 +70,18 @@ async def add_habit(
 async def get_habits(
     user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
 ) -> List[HabitSchema]:
-    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
     return user.habits
 
 
 @habit_router.post("/habit_completion")
 async def habit_completion(
-    habit_id: Annotated[
-        str, Header(title="Id of habit that need to be marked as completed")
-    ],
+    habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
-    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
+    habit_id = habit_id.habit_id
 
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
@@ -132,11 +128,11 @@ async def habit_completion(
 
 @habit_router.post("/uncomplete_habit")
 async def uncomplete_habit(
-    habit_id: Annotated[str, Header(title="Id of habit to delete")],
+    habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):
-    await asyncio.sleep(0.5)
+    habit_id = habit_id.habit_id
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
         habit_completion = db.query(HabitCompletions).order_by(HabitCompletions.completed_at).first()
@@ -158,12 +154,12 @@ async def uncomplete_habit(
 
 @habit_router.post("/delete_habit")
 async def delete_habit(
-    habit_id: Annotated[str, Header(title="Id of habit to delete")],
+    habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
-    await asyncio.sleep(0.5)
     user = get_merged_user(user=user, db=db)
+    habit_id = habit_id.habit_id
     try:
         habit_to_delete = db.query(Habits).filter(Habits.habit_id == habit_id).first()
     except SQLAlchemyError:
@@ -181,11 +177,11 @@ async def delete_habit(
 
 @habit_router.get("/get_completions")
 async def get_completions(
-    habit_id: Annotated[str, Header(title="Id of habit to delete")],
+    habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> List[HabitCompletionSchema]:
-    await asyncio.sleep(0.5)
+    habit_id = habit_id.habit_id
     user = get_merged_user(user=user, db=db)
     try:
         habit = db.query(Habits).filter(Habits.habit_id == habit_id).first()

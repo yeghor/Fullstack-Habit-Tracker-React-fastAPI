@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Annotated
 from fastapi import Body, Header
+from uuid import UUID
 
 class HabitSchema(BaseModel):
     habit_id: str
@@ -38,17 +39,22 @@ class TokenProvidedSchema(BaseModel):
     token: Annotated[str, Field(..., title="Authorization token, starts with: Bearer", max_length=1000)]
 
 
-class RegisterSchema(BaseModel):
+class BaseAuthForm(BaseModel):
     username: Annotated[str, Field(..., min_length=3, max_length=50)]
-    password: Annotated[str, Field(..., min_length=8, max_length=30)]
+    password: Annotated[str, Field(..., min_length=8, max_length=30)]    
+
+
+class RegisterSchema(BaseAuthForm):
     email: Annotated[str, Field(..., min_length=1, max_length=254)]
 
 
-class LoginSchema(BaseModel):
-    username: Annotated[str, Field(..., min_length=3, max_length=50)]
-    password: Annotated[str, Field(..., min_length=8, max_length=30)]
+class LoginSchema(BaseAuthForm):
+    pass
 
 class AddHabitSchema(BaseModel):
     habit_name: Annotated[str, Field(..., min_length=3, max_length=200)]
     habit_desc: Annotated[str, Field(..., min_length=3, max_length=500)]
     reset_at: Annotated[List[int], Field(...)]
+
+class HabitIdProvidedSchema(BaseModel): 
+    habit_id: Annotated[str, Field(...)]
