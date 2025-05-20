@@ -5,9 +5,11 @@ import { useContext } from "react";
 import { TokenContext } from "../tokenContext";
 import Login from "./authrorization/login.jsx"
 import Register from "./authrorization/register.jsx"
+import { defineCookies } from "../utils/cookieToken.js";
 
 const NavBar = () => {
-    const [token, setToken] = useContext(TokenContext); 
+    const [token, setToken] = defineCookies();
+    
     return(
         <div>
         <nav className="border-gray-300 border-1">

@@ -5,14 +5,16 @@ import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality";
 import { TokenContext } from "../tokenContext";
 import { useNavigate } from "react-router";
 import { handleResponseError } from "../utils/handleResponse";
+import { defineCookies } from "../utils/cookieToken";
 
 const AddHabitWindow = (props) => {
+    const [token, setToken] = defineCookies();
+
     const navigate = useNavigate();
     const [ resetTimeArray, setResettingTimes ] = useState([]);
     const [ habitName, setHabitName ] = useState("");
     const [ habitsDesc, setHabitDesc ] = useState("");
 
-    const [ token, setToken ] = useContext(TokenContext);
 
     const [ resetHours, setResetHours ] = useState(Number);
     const [ resetMinutes, setResetMinutes ] = useState(Number);

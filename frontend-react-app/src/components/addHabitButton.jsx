@@ -5,7 +5,6 @@ import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality"
 import AddHabitWindow from "./addHabitWindow"
 import "../index.css"
 
-
 const AddHabitButton = (props) => {
     const [ seen, setSeen ] = useState(false);
 

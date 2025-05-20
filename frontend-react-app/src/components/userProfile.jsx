@@ -9,9 +9,11 @@ import "../index.css"
 import { changeUsernameURL } from "../api_fetching/urls";
 import { changePasswordURL } from "../api_fetching/urls";
 import { fetchChangePassword } from "../api_fetching/urlParserAuthorization";
+import { defineCookies } from "../utils/cookieToken";
 
 const UserProfile = () => {
-    const [ token, setToken ] = useContext(TokenContext);
+    const [token, setToken] = defineCookies();
+
     const [ profile, setProfile ] = useState({});
     const [ refresh, setRefresh ] = useState(false);
     const [ loading, setLoading ] = useState(false);

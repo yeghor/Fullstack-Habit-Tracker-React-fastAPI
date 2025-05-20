@@ -1,0 +1,1 @@
+export const cookieExpiresSeconds = 3600;

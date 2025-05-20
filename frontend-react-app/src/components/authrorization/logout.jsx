@@ -4,9 +4,10 @@ import { fetchLogout } from "../../api_fetching/urlParserAuthorization";
 import { TokenContext } from "../../tokenContext";
 import { useNavigate } from "react-router";
 import { handleResponseError } from "../../utils/handleResponse";
+import { defineCookies } from "../../utils/cookieToken";
 
 const Logout = () => {
-    const [token, setToken] = useContext(TokenContext);
+    const [token, setToken] = defineCookies();
     const navigate = useNavigate();
 
     const clickLogoutHandler = () => {

@@ -10,10 +10,12 @@ import DeleteHabit from "./deleteHabit";
 import { minutesToReset } from "../utils/getTimeUntilReset";
 import { handleResponseError } from "../utils/handleResponse";
 import "../index.css"
+import { defineCookies } from "../utils/cookieToken";
 
 export const Habits = () => {
+    const [token, setToken] = defineCookies();
+
     const navigate = useNavigate();
-    const [token, setToken] = useContext(TokenContext);
     const [habits, setHabits] = useState([]);
     const [refreshHabits, setRefreshHabits] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -54,7 +56,7 @@ export const Habits = () => {
         };
 
         fetchHabits();
-    }, [refreshHabits, token, navigate, setToken]);
+    }, [refreshHabits, navigate]);
 
     const checkboxHandler = async (e, habitID, index) => {
         const updatedHabits = [...habits];

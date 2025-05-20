@@ -4,10 +4,11 @@ import { TokenContext } from "../tokenContext";
 import { Link } from "react-router-dom";
 import NavBar from "./navBar";
 import "../index.css"
+import { defineCookies } from "../utils/cookieToken";
 
 function MainPage() {
-    const [token, setToken] = useContext(TokenContext);
-
+    const [ token, setToken ] = defineCookies();
+    console.log("token ", token)
     if(token) {
         return (
             <div>

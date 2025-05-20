@@ -6,10 +6,12 @@ import {verifyUsernameLength, verifyEmail, verifyPasswordLength} from "../../uti
 import { Link, useNavigate } from "react-router"
 import { handleResponseError } from "../../utils/handleResponse";
 import NavBar from "../navBar";
+import { defineCookies } from "../../utils/cookieToken";
 
 const Login = () => {
+    const [ token, setToken ] = defineCookies();
+
     let navigate = useNavigate();
-    const [token, setToken] = useContext(TokenContext);
     const [errorMessage, setErrorMessage] = useState(null);
 
     const [username, setUsername] = useState(null)

@@ -7,10 +7,12 @@ import { useNavigate } from "react-router"
 import { handleResponseError } from "../../utils/handleResponse";
 import NavBar from "../navBar";
 import { Link } from "react-router-dom";
+import { defineCookies } from "../../utils/cookieToken";
 
 const Register = () => {
+    const [token, setToken] = defineCookies();
+
     let navigate = useNavigate();
-    const [token, setToken] = useContext(TokenContext);
     const [errorMessage, setErrorMessage] = useState("");
 
     const [username, setUsername] = useState("")
