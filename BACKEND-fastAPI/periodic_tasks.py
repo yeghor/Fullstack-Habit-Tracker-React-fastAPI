@@ -1,4 +1,4 @@
-from models import Habits, JWTTable, HabitCompletions
+from models import Habits, JWTTable, HabitCompletions, Users
 from database import session_local
 from sqlalchemy.orm import Session
 import datetime

@@ -165,7 +165,7 @@ async def uncomplete_habit(
         db.commit()
         db.refresh(user)
         db.refresh(habit)
-        
+
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while worrking with database")
 
@@ -186,7 +186,7 @@ async def delete_habit(
         raise HTTPException(status_code=400, detail="Habit with this id doesn't exist")
 
     if habit_to_delete.user_id != user.user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized. User id in habit owner doesn't match.")
+        raise HTTPException(status_code=400, detail="Unauthorized. User id in habit owner doesn't match.")
 
     db.delete(habit_to_delete)
     db.commit()
