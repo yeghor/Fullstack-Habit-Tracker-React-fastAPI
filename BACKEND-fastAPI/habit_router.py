@@ -24,8 +24,8 @@ habit_router = APIRouter()
 load_dotenv()
 
 
-XP_AFTER_COMPLETION = os.getenv("XP_AFTER_COMPLETION")
-XP_RANDOM_FACTOR = os.getenv("XP_RANDOM_FACTOR")
+XP_AFTER_COMPLETION = int(os.getenv("XP_AFTER_COMPLETION"))
+XP_RANDOM_FACTOR = int(os.getenv("XP_RANDOM_FACTOR"))
 
 @habit_router.post("/add_habit")
 async def add_habit(
@@ -96,35 +96,41 @@ async def habit_completion(
             status_code=409,
             detail="This habit is already completed. Wait until it's resetting time",
         )
-
-    HabitCompletion = HabitCompletions(
-        completion_id=str(uuid4()),
-        habit_id=habit.habit_id,
-        habit_name=habit.habit_name,
-        user_id=user.user_id,
-        completed_at=datetime.datetime.today().timestamp(),
-        owner=user,
-        habit=habit,
-    )
-
-    from_midnight_unix = get_seconds_from_midnight()
-    reset_at = habit.reset_at
-    reset_at_sorted = dict(sorted(reset_at.items()))
-    for time, flag in reset_at_sorted.items():
-        if from_midnight_unix > int(time) and not flag:
-            reset_at_sorted[time] = True
-
     try:
-        user.completions.append(HabitCompletion)
-        habit.completions.append(HabitCompletion)
+        xp_for_completion = int(XP_AFTER_COMPLETION * random.randrange(1, XP_RANDOM_FACTOR + 1))
 
-        user.xp += int(XP_AFTER_COMPLETION)
+        HabitCompletion = HabitCompletions(
+            completion_id=str(uuid4()),
+            habit_id=habit.habit_id,
+            habit_name=habit.habit_name,
+            user_id=user.user_id,
+            completed_at=datetime.datetime.today().timestamp(),
+            xp_given=xp_for_completion,
+            owner=user,
+            habit=habit,
+        )
 
-        habit.completed = True
+        from_midnight_unix = get_seconds_from_midnight()
+        reset_at = habit.reset_at
+        reset_at_sorted = dict(sorted(reset_at.items()))
+        for time, flag in reset_at_sorted.items():
+            if from_midnight_unix > int(time) and not flag:
+                reset_at_sorted[time] = True
 
+        try:
+            user.completions.append(HabitCompletion)
+            habit.completions.append(HabitCompletion)
+
+            user.xp += int(xp_for_completion)
+
+            habit.completed = True
+
+        except SQLAlchemyError:
+            raise HTTPException(status_code=500, detail="Erorr while working with database")
+    finally:
         db.commit()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+        db.refresh(HabitCompletion)
+
 
 @habit_router.post("/uncomplete_habit")
 async def uncomplete_habit(
@@ -132,23 +138,34 @@ async def uncomplete_habit(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):
+    user = get_merged_user(user=user, db=db)
+
     habit_id = habit_id.habit_id
     try:
         habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
         habit_completion = db.query(HabitCompletions).order_by(HabitCompletions.completed_at).first()
 
-        db.delete(habit_completion)
-
-        habit.completed = False
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while worrking with database")
 
     if not habit:
         raise HTTPException(status_code=400, detail="No such habit")
 
+    if not habit_completion:
+        raise HTTPException(status_code=400, detail="No habit completion entries were made")
+
+    if not habit.completed:
+        raise HTTPException(status_code=400, detail="This habit is not completed, make a completion to be able to uncomplete habit")
+      
     try:
-        user.xp -= int(XP_AFTER_COMPLETION)
+        db.delete(habit_completion)
+        habit.completed = False
+
+        user.xp -= int(habit_completion.xp_given)
         db.commit()
+        db.refresh(user)
+        db.refresh(habit)
+        
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while worrking with database")
 

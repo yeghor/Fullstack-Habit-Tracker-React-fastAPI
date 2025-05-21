@@ -49,6 +49,7 @@ class HabitCompletions(Base):
     habit_name = Column(String)
     user_id = Column(String, ForeignKey("users.user_id"))
     completed_at = Column(Integer)
+    xp_given = Column(Integer)
 
     owner = relationship("Users", back_populates="completions")
     habit = relationship("Habits", back_populates="completions")
