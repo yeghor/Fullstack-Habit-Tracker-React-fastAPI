@@ -19,6 +19,7 @@ from schemas import HabitSchema, HabitCompletionSchema
 from sqlalchemy.exc import SQLAlchemyError
 import asyncio
 from periodic_tasks import get_seconds_from_midnight
+from user_xp_level_util import get_level_by_xp
 
 habit_router = APIRouter()
 load_dotenv()
@@ -99,7 +100,7 @@ async def habit_completion(
     try:
         xp_for_completion = int(XP_AFTER_COMPLETION * random.randrange(1, XP_RANDOM_FACTOR + 1))
 
-        HabitCompletion = HabitCompletions(
+        habit_completion = HabitCompletions(
             completion_id=str(uuid4()),
             habit_id=habit.habit_id,
             habit_name=habit.habit_name,
@@ -118,10 +119,13 @@ async def habit_completion(
                 reset_at_sorted[time] = True
 
         try:
-            user.completions.append(HabitCompletion)
-            habit.completions.append(HabitCompletion)
+            user.completions.append(habit_completion)
+            habit.completions.append(habit_completion)
 
             user.xp += int(xp_for_completion)
+
+            level, xp_needed = get_level_by_xp(user.xp)
+            user.level = level
 
             habit.completed = True
 
@@ -129,7 +133,8 @@ async def habit_completion(
             raise HTTPException(status_code=500, detail="Erorr while working with database")
     finally:
         db.commit()
-        db.refresh(HabitCompletion)
+        db.refresh(habit_completion)
+        db.refresh(user)
 
 
 @habit_router.post("/uncomplete_habit")
@@ -162,6 +167,9 @@ async def uncomplete_habit(
         habit.completed = False
 
         user.xp -= int(habit_completion.xp_given)
+        level, xp_needed = get_level_by_xp(user.xp)
+        user.level = level
+        
         db.commit()
         db.refresh(user)
         db.refresh(habit)

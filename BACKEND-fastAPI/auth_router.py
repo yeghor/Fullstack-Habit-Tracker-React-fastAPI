@@ -177,6 +177,8 @@ async def get_user_profile(
         "username": user.username,
         "joined_at": user.joined_at,
         "email": user.email,
+        "xp": user.xp,
+        "level": user.level,
     }
 
     return UserSchema(**user_mapping)

@@ -24,6 +24,8 @@ class UserSchema(BaseModel):
     username: str
     joined_at: str
     email: str
+    xp: int
+    level: int
 
 
 class TokenSchema(BaseModel):
