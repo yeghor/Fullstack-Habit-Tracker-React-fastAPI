@@ -6,9 +6,7 @@ import NavBar from "./navBar";
 import { useNavigate } from "react-router";
 import { handleResponseError } from "../utils/handleResponse";
 import "../index.css"
-import { changeUsernameURL } from "../api_fetching/urls";
-import { changePasswordURL } from "../api_fetching/urls";
-import { fetchChangePassword } from "../api_fetching/urlParserAuthorization";
+import { fetchChangePassword, fetchChangeUsername } from "../api_fetching/urlParserAuthorization";
 import { defineCookies } from "../utils/cookieToken";
 
 const UserProfile = () => {
@@ -38,6 +36,10 @@ const UserProfile = () => {
                 handleResponseError(response, reponseJSON, navigate, setToken);
 
                 setProfile(reponseJSON);
+            } catch (err) {
+                console.error(err);
+                navigate("internal-server-errro");
+                return 
             } finally {
                 setLoading(false);
             }
@@ -55,21 +57,14 @@ const UserProfile = () => {
             try {
                 const response = await fetchChangePassword(newPasswordFirst, token);
                 const responseJSON = await response.json();
-                
-                if(response.status === 400) {
-                    console.log(responseJSON.detail)
-                    setErrorMessage(responseJSON.detail);
-                    return;
-                };
-                
+                                
                 handleResponseError(response, responseJSON, navigate, setToken);
                 
                 setRefresh(!refresh);
-                setShowChangePasswordForm(!showChangePasswordForm)
-                setErrorMessage("")
+                setShowChangePasswordForm(!showChangePasswordForm);
             } catch (err) {
-                console.error(err)
-                navigate("internal-server-error");
+                console.error(err);
+                navigate("/internal-server-error");
                 return;
             };            
         };
@@ -78,6 +73,21 @@ const UserProfile = () => {
 
     const handleChangeUsername = (e) => {
         e.preventDefault();
+        const fetchUsrnm = async () => {
+            try {
+                const response = await fetchChangeUsername(newUsername, token);
+                const responseJSON = await response.json();
+                if(response.status === 401) {
+                    navigate("/internal-server-error", { state: {errorMessage: responseJSON.detail}});
+                };
+                handleResponseError(response, responseJSON, navigate, setToken);
+                setProfile({...profile, "username": newUsername});
+            } catch(err) {
+                console.error(err);
+                navigate("/internal-server-error");
+                return
+            };
+        };
     };
 
     if(token) {
@@ -170,7 +180,7 @@ const UserProfile = () => {
             { showChangeUsernameForm ?
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-lg sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
-                    <form className="space-y-6" onSubmit={handleChangePassword}>
+                    <form className="space-y-6" onSubmit={handleChangeUsername}>
                         <div className="flex justify-end items-center">
                             <button onClick={() => setShowChangeUsernameForm(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
                                 ✕

@@ -48,7 +48,7 @@ export const Habits = () => {
                     }
                 }
             } catch (err) {
-                console.error("Error fetching habits:", err);
+                console.error(err);
                 navigate("/internal-server-error");
             } finally {
                 setLoading(false);
@@ -63,21 +63,32 @@ export const Habits = () => {
 
         updatedHabits[index].completed = !updatedHabits[index].completed
         setHabits(updatedHabits)
-
-        if(e.target.checked) {
-            const response = await fetchHabitCompletion(habitID, token);
-            const responseJSON = await response.json();
-            handleResponseError(response, responseJSON, navigate, setToken);
-        } else {
-            const response = await fetchUncompleteHabit(habitID, token);
-            const responseJSON = await response.json();
-            handleResponseError(response, responseJSON, navigate, setToken);
+        try {
+            if(e.target.checked) {
+                const response = await fetchHabitCompletion(habitID, token);
+                const responseJSON = await response.json();
+                handleResponseError(response, responseJSON, navigate, setToken);
+            } else {
+                const response = await fetchUncompleteHabit(habitID, token);
+                const responseJSON = await response.json();
+                handleResponseError(response, responseJSON, navigate, setToken);
+            };            
+        } catch (err) {
+            console.error(err);
+            navigate("/internal-server-error", {  state: {errorMessage: "Server down, try again later. "} });
+            return;
         };
     };
 
     const getClosestResetTime = async (resetAt, completed) => {
-        const response = await fetchGetUNIXFromMidnight(token);
-        const responseJSON = await response.json();
+        try {
+            const response = await fetchGetUNIXFromMidnight(token);           
+        } catch (err) {
+            console.error(err);
+            navigate("/internal-server-error", { state: {  } });
+            return;
+        };
+        const responseJSON = await response.json(); 
 
         handleResponseError(response, responseJSON, navigate, setToken);
 
