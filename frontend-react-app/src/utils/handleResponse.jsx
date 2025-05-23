@@ -10,7 +10,7 @@ export const handleResponseError = async (response, responseJSON, navigate, setT
             return
         } catch (err) {
             console.error("Failed to parse JSON response ", err)
-            navigate("/internal-server-error", { state: {errorMessage: "Uknown Error Occured"} });
+            navigate("/internal-server-error", { state: {errorMessage: "Uknown Error Occured"}});
             return
         };
     } else {

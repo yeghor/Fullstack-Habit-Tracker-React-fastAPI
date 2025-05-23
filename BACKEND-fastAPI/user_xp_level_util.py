@@ -16,6 +16,4 @@ def get_level_by_xp(current_xp: int) -> Tuple[int, int]:
             break
         total_xp += xp_needed_to_next_level
         level += 1
-    return (level, xp_needed_to_next_level)
-
-print(get_level_by_xp(40))
+    return level, xp_needed_to_next_level

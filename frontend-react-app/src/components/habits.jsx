@@ -83,35 +83,34 @@ export const Habits = () => {
     const getClosestResetTime = async (resetAt, completed) => {
         try {
             const response = await fetchGetUNIXFromMidnight(token);           
-        } catch (err) {
-            console.error(err);
-            navigate("/internal-server-error", { state: {  } });
-            return;
-        };
-        const responseJSON = await response.json(); 
+            const responseJSON = await response.json(); 
 
-        handleResponseError(response, responseJSON, navigate, setToken);
+            handleResponseError(response, responseJSON, navigate, setToken);
 
-        const UNIXFromMidnight = Number(responseJSON.UNIX_time);
+            const UNIXFromMidnight = Number(responseJSON.UNIX_time);
 
-        let requiredWindow = null;
-        let resetAtKeys = Object.keys(resetAt);
-        resetAtKeys = resetAtKeys.sort()
-        for(let i = 0; i < resetAtKeys.length; i++) {
-            let currentWindow = resetAtKeys[i];
-            if(UNIXFromMidnight < Number(currentWindow)) {
-                requiredWindow = currentWindow;
-                break
+            let requiredWindow = null;
+            let resetAtKeys = Object.keys(resetAt);
+            resetAtKeys = resetAtKeys.sort()
+            for(let i = 0; i < resetAtKeys.length; i++) {
+                let currentWindow = resetAtKeys[i];
+                if(UNIXFromMidnight < Number(currentWindow)) {
+                    requiredWindow = currentWindow;
+                    break
+                };
             };
-        };
-        if(!requiredWindow) {
-            if(completed) {
-                return "You're all done! Check your habits tomorrow."
-            } else {
-                return "No more resets until tomorrow."
+            if(!requiredWindow) {
+                if(completed) {
+                    return "You're all done! Check your habits tomorrow."
+                } else {
+                    return "No more resets until tomorrow."
+                };
             };
-        };
-        return minutesToReset(requiredWindow, UNIXFromMidnight);
+            return minutesToReset(requiredWindow, UNIXFromMidnight);
+            } catch (err) {
+                console.error(err);
+                navigate("/internal-server-error", { state: {  } });
+            }
         };
 
     if(token) { 

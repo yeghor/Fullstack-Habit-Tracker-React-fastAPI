@@ -15,8 +15,8 @@ from authorization_utils import (
 from db_utils import get_db, get_merged_user
 from authorization_utils import get_user_depends
 from sqlalchemy.exc import SQLAlchemyError
-import time
 import random
+from user_xp_level_util import get_level_by_xp
 
 auth_router = APIRouter()
 
@@ -172,13 +172,16 @@ async def get_user_profile(
     user: Users = Depends(get_user_depends),
 ) -> UserSchema:
 
+    level, next_level_xp = get_level_by_xp(user.xp)
+
     user_mapping = {
         "user_id": user.user_id,
         "username": user.username,
         "joined_at": user.joined_at,
         "email": user.email,
         "xp": user.xp,
-        "level": user.level,
+        "level": level,
+        "next_level_xp": next_level_xp
     }
 
     return UserSchema(**user_mapping)

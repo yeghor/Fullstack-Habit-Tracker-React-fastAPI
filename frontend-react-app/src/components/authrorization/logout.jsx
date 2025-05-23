@@ -13,9 +13,10 @@ const Logout = () => {
     const clickLogoutHandler = () => {
         const logout = async () => {
             await fetchLogout(token, setToken);
-            navigate("/");
-        }
-        logout() ;      
+            setToken();
+            navigate("/register")
+        };
+        logout();      
     };
 
     return(

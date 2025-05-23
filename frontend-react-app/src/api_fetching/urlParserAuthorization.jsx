@@ -24,11 +24,9 @@ export async function fetchChangeUsername(newUsername, token) {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "token": "Bearer" + token
+            "token": "Bearer " + token
         },
-        body: JSON.stringify({
-            "new-usename": newUsername,
-        })
+        body: JSON.stringify(newUsername)
     });
     return response;
 };
@@ -51,8 +49,11 @@ export async function fetchLogout(token, setToken) {
     const response = await fetch(logoutURL, {
         method: "POST",
         headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
             "token": "Bearer " + token
-        }
+        })
     });
     if(!response.ok) {
         const errorData = await response.json();

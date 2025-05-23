@@ -8,6 +8,7 @@ import { handleResponseError } from "../utils/handleResponse";
 import "../index.css"
 import { fetchChangePassword, fetchChangeUsername } from "../api_fetching/urlParserAuthorization";
 import { defineCookies } from "../utils/cookieToken";
+import { navigateToServerInternalError } from "../utils/navigateUtils";
 
 const UserProfile = () => {
     const [token, setToken] = defineCookies();
@@ -31,14 +32,14 @@ const UserProfile = () => {
             setLoading(true);
             try {
                 const response = await fetchGetUserProfile(token);
-                const reponseJSON = await response.json();
+                const responseJSON = await response.json();
 
-                handleResponseError(response, reponseJSON, navigate, setToken);
-
-                setProfile(reponseJSON);
+                handleResponseError(response, responseJSON, navigate, setToken);
+                console.log(responseJSON)
+                setProfile(responseJSON);
             } catch (err) {
                 console.error(err);
-                navigate("internal-server-errro");
+                navigateToServerInternalError(navigate)
                 return 
             } finally {
                 setLoading(false);
@@ -52,19 +53,25 @@ const UserProfile = () => {
         const fetchPass = async () => {
             if(newPasswordFirst !== newPasswordSecond) {
                 setErrorMessage("Password didn't match");
+                return;
             };
 
             try {
                 const response = await fetchChangePassword(newPasswordFirst, token);
                 const responseJSON = await response.json();
-                                
+                
+                if(response.status === 400) {
+                    setErrorMessage(responseJSON.detail);
+                    return;
+                };
+                
                 handleResponseError(response, responseJSON, navigate, setToken);
                 
                 setRefresh(!refresh);
                 setShowChangePasswordForm(!showChangePasswordForm);
             } catch (err) {
                 console.error(err);
-                navigate("/internal-server-error");
+                navigateToServerInternalError(navigate)
                 return;
             };            
         };
@@ -74,20 +81,25 @@ const UserProfile = () => {
     const handleChangeUsername = (e) => {
         e.preventDefault();
         const fetchUsrnm = async () => {
+            if(newUsername === profile.username) {
+                setErrorMessage("New username can't be same as old one");
+                return;
+            };
+
             try {
                 const response = await fetchChangeUsername(newUsername, token);
                 const responseJSON = await response.json();
-                if(response.status === 401) {
-                    navigate("/internal-server-error", { state: {errorMessage: responseJSON.detail}});
-                };
+
                 handleResponseError(response, responseJSON, navigate, setToken);
                 setProfile({...profile, "username": newUsername});
+                setShowChangeUsernameForm(!showChangeUsernameForm);
             } catch(err) {
                 console.error(err);
-                navigate("/internal-server-error");
-                return
+                navigateToServerInternalError(navigate);
+                return;
             };
         };
+        fetchUsrnm();
     };
 
     if(token) {
@@ -107,12 +119,12 @@ const UserProfile = () => {
                         </div>
                         <div className="flex flex-col gap-4 w-full mt-4">
                             <button
-                                onClick={() => setShowChangePasswordForm(!showChangePasswordForm)}
+                                onClick={() => {setShowChangePasswordForm(!showChangePasswordForm); setErrorMessage(null)}}
                                 className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
                                 Change Password
                             </button>
                             <button
-                                onClick={() => setShowChangeUsernameForm(!showChangeUsernameForm)}
+                                onClick={() => {setShowChangeUsernameForm(!showChangeUsernameForm); setErrorMessage(null)}}
                                 className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
                                 Change Username
                             </button>

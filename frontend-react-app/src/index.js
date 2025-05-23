@@ -10,7 +10,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 import { Habits } from './components/habits.jsx';
 import LoginTimeOut from './components/loginTimeout.jsx';
 import UserProfile from './components/userProfile.jsx';
-import InternalServerError from './components/serverInternalError.jsx';
+import InternalServerError from './components/internalServerError.jsx';
 
 function Main() {
     const [token , setToken] = useState(() => { return localStorage.getItem("token")});

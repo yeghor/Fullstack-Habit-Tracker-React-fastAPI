@@ -1,7 +1,4 @@
 import React from "react";
-import { useContext } from "react";  
-import { TokenContext } from "../tokenContext";
-import { Link } from "react-router-dom";
 import NavBar from "./navBar";
 import "../index.css"
 import { defineCookies } from "../utils/cookieToken";
@@ -9,6 +6,7 @@ import { defineCookies } from "../utils/cookieToken";
 function MainPage() {
     const [ token, setToken ] = defineCookies();
     console.log("token ", token)
+
     if(token) {
         return (
             <div>

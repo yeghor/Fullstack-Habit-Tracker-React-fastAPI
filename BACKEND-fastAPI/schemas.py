@@ -26,6 +26,7 @@ class UserSchema(BaseModel):
     email: str
     xp: int
     level: int
+    next_level_xp: int
 
 
 class TokenSchema(BaseModel):

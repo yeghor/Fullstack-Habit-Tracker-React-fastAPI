@@ -10,6 +10,7 @@ const InternalServerError = (props) => {
         <div>
             <h1>Internal Server Error :(</h1>
             <h2>Something went wrong, please. Try again later.</h2>
+            {errorMessage ? errorMessage : "Uknown error occured on server. Please let us know and try again later"}
             <p>Server: {errorMessage}</p>
             <Link to={"/"}>Go back</Link>
         </div>
