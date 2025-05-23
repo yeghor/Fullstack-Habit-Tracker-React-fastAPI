@@ -7,13 +7,18 @@ load_dotenv()
 BASE_LEVEL_XP = int(getenv("BASE_LEVEL_XP"))
 XP_GROWTH_RATE = float(getenv("XP_GROWTH_RATE"))
 
-def get_level_by_xp(current_xp: int) -> Tuple[int, int]:
+def get_level_by_xp(current_xp: int) -> Tuple[int, int, int]:
     level = 1
     total_xp = 0
+
     while True:
-        xp_needed_to_next_level = BASE_LEVEL_XP * (XP_GROWTH_RATE ** (level - 1))
+        xp_needed_to_next_level = int(BASE_LEVEL_XP * (XP_GROWTH_RATE ** (level - 1)))
         if current_xp < total_xp + xp_needed_to_next_level:
             break
         total_xp += xp_needed_to_next_level
         level += 1
-    return level, xp_needed_to_next_level
+
+    next_level_total_cost = int(BASE_LEVEL_XP * (XP_GROWTH_RATE ** (level - 1)))
+    xp_remaining = total_xp + next_level_total_cost - current_xp
+
+    return level, next_level_total_cost + xp_remaining

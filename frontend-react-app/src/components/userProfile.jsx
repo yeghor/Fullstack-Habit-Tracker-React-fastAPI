@@ -20,6 +20,8 @@ const UserProfile = () => {
     const [ showChangePasswordForm, setShowChangePasswordForm ] = useState(false);
     const [ errorMessage, setErrorMessage ] = useState("");
 
+    const [ userXP, setUserXP ] = useState(null);
+
     const [ newPasswordFirst, setNewPasswordFirst ] = useState(null);
     const [ newPasswordSecond, setNewPasswordSecond ] = useState(null);
 
@@ -35,15 +37,15 @@ const UserProfile = () => {
                 const responseJSON = await response.json();
 
                 handleResponseError(response, responseJSON, navigate, setToken);
-                console.log(responseJSON)
+                console.log(responseJSON);
                 setProfile(responseJSON);
             } catch (err) {
                 console.error(err);
-                navigateToServerInternalError(navigate)
+                navigateToServerInternalError(navigate);
                 return 
             } finally {
                 setLoading(false);
-            }
+            };
         };
         fetchProfile();
     }, [refresh]);
@@ -102,6 +104,10 @@ const UserProfile = () => {
         fetchUsrnm();
     };
 
+    const getPersentageOfWidthProgressBar = () => {
+        return profile.xp / profile.next_level_xp;
+    }
+
     if(token) {
         return(
             <div>
@@ -116,6 +122,9 @@ const UserProfile = () => {
                             />
                             <h2 className="text-2xl font-bold text-gray-800 mb-1">{profile.username}</h2>
                             <p className="text-gray-500 text-sm">{profile.email}</p>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full flex justify-start">
+                            <div style={{ width: `${getPersentageOfWidthProgressBar() * 100}%` }} className={`rounded-full bg-blue-500 text-white p-1.5 font-semibold`}>XP - {profile.xp} |<span className="font-sans ml-2">Level - {profile.level} |</span><span className="font-sans ml-2">Xp to next level - {profile.next_level_xp}</span></div>
                         </div>
                         <div className="flex flex-col gap-4 w-full mt-4">
                             <button

@@ -172,7 +172,7 @@ async def get_user_profile(
     user: Users = Depends(get_user_depends),
 ) -> UserSchema:
 
-    level, next_level_xp = get_level_by_xp(user.xp)
+    level, next_level_xp_needed = get_level_by_xp(user.xp)
 
     user_mapping = {
         "user_id": user.user_id,
@@ -181,7 +181,7 @@ async def get_user_profile(
         "email": user.email,
         "xp": user.xp,
         "level": level,
-        "next_level_xp": next_level_xp
+        "next_level_xp": next_level_xp_needed,
     }
 
     return UserSchema(**user_mapping)
