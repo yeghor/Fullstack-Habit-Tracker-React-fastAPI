@@ -124,9 +124,6 @@ async def habit_completion(
 
             user.xp += int(xp_for_completion)
 
-            level, xp_needed = get_level_by_xp(user.xp)
-            user.level = level
-
             habit.completed = True
 
         except SQLAlchemyError:

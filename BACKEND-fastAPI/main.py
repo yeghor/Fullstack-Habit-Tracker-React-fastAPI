@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import datetime
 from database import engine, session_local
-from models import Base, Users, JWTTable
+from models import Base, Users, JWTTable, HabitCompletions, Habits
 from apscheduler.schedulers.background import BackgroundScheduler
 from auth_router import auth_router
 from dotenv import load_dotenv
@@ -56,3 +56,7 @@ app.add_middleware(
 def clear_tables():
     Users.__table__.drop(engine)
     JWTTable.__table__.drop(engine)
+    Habits.__table__.drop(engine)
+    HabitCompletions.__table__.drop(engine)
+
+# clear_tables()

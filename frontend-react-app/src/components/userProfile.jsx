@@ -105,7 +105,7 @@ const UserProfile = () => {
     };
 
     const getPersentageOfWidthProgressBar = () => {
-        return profile.xp / profile.next_level_xp;
+        return profile.xp / profile.xp_to_next_level
     }
 
     if(token) {
@@ -123,8 +123,10 @@ const UserProfile = () => {
                             <h2 className="text-2xl font-bold text-gray-800 mb-1">{profile.username}</h2>
                             <p className="text-gray-500 text-sm">{profile.email}</p>
                         </div>
+                        <p>XP - {profile.user_xp_total}</p>
+                        <p>To achieve next level remaining - {profile.next_level_xp_remaining}</p>
                         <div className="w-full bg-gray-100 rounded-full flex justify-start">
-                            <div style={{ width: `${getPersentageOfWidthProgressBar() * 100}%` }} className={`rounded-full bg-blue-500 text-white p-1.5 font-semibold`}>XP - {profile.xp} |<span className="font-sans ml-2">Level - {profile.level} |</span><span className="font-sans ml-2">Xp to next level - {profile.next_level_xp}</span></div>
+                            <div style={{ width: `${getPersentageOfWidthProgressBar() * 100}%` }} className={`rounded-full bg-blue-500 text-white p-1.5 font-semibold`}></div>
                         </div>
                         <div className="flex flex-col gap-4 w-full mt-4">
                             <button

@@ -16,7 +16,7 @@ from db_utils import get_db, get_merged_user
 from authorization_utils import get_user_depends
 from sqlalchemy.exc import SQLAlchemyError
 import random
-from user_xp_level_util import get_level_by_xp
+from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
 
 auth_router = APIRouter()
 
@@ -170,18 +170,31 @@ async def loogut(
 @auth_router.get("/get_user_profile")
 async def get_user_profile(
     user: Users = Depends(get_user_depends),
+    db: Session = Depends(get_db)
 ) -> UserSchema:
+    user = get_merged_user(user=user, db=db)
 
-    level, next_level_xp_needed = get_level_by_xp(user.xp)
+    level, next_level_xp_remaining = get_level_by_xp(user.xp)
+    user.level = level
+    print(next_level_xp_remaining)
+    current_level_xp = get_xp_nedeed_by_level(user.level - 1)
 
+    user.xp = user.xp - current_level_xp
+
+    xp_to_next_level = get_xp_nedeed_by_level(user.level)
+
+    user_xp_current = xp_to_next_level - next_level_xp_remaining
+    print(user_xp_current)
     user_mapping = {
         "user_id": user.user_id,
         "username": user.username,
         "joined_at": user.joined_at,
         "email": user.email,
-        "xp": user.xp,
-        "level": level,
-        "next_level_xp": next_level_xp_needed,
+        "xp": user_xp_current,
+        "level": user.level,
+        "next_level_xp_remaining": next_level_xp_remaining,
+        "xp_to_next_level": xp_to_next_level,
+        "user_xp_total": user.xp,
     }
 
     return UserSchema(**user_mapping)
