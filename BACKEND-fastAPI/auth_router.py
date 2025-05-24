@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Body, Header, Depends, APIRouter
+from fastapi import HTTPException, Body, Header, Depends, APIRouter, Request
 from typing import Annotated
 from schemas import TokenSchema, UserSchema, RegisterSchema, LoginSchema, TokenProvidedSchema
 from GeneratingAuthUtils import jwt_token_handling, password_handling
@@ -17,12 +17,13 @@ from authorization_utils import get_user_depends
 from sqlalchemy.exc import SQLAlchemyError
 import random
 from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
+from rate_limiter import rate_limit
 
 auth_router = APIRouter()
-
-
+    
 @auth_router.get("/")
-async def test() -> str:
+@rate_limit(periods=60, max_calls=5)
+async def test(request: Request) -> str:
     return "Hello World: " + str(random.randint(1, 100)) 
 
 

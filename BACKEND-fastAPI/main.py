@@ -1,6 +1,5 @@
-from fastapi import FastAPI
-import datetime
-from database import engine, session_local
+from fastapi import FastAPI, Request, HTTPException
+from database import engine
 from models import Base, Users, JWTTable, HabitCompletions, Habits
 from apscheduler.schedulers.background import BackgroundScheduler
 from auth_router import auth_router
@@ -10,7 +9,9 @@ from habit_router import habit_router
 from periodic_tasks import update_jwts, reset_all_habits, reset_potential_habit
 from fastapi.middleware.cors import CORSMiddleware
 from utils_router import utils_router
-from sqlalchemy.exc import SQLAlchemyError
+import time
+from typing import Any
+import hashlib
 
 load_dotenv()
 
@@ -33,7 +34,7 @@ scheduler_interval.add_job(
     hour=int(os.getenv("HABIT_RESETTING_HOURS")),
     minute=0,
 )
-
+    
 scheduler_interval.start()
 
 
