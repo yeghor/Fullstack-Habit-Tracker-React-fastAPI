@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Body, Header, Depends, APIRouter
+from fastapi import HTTPException, Body, Header, Depends, APIRouter, Request
 from typing import Annotated, Dict, List
 from schemas import TokenSchema, AddHabitSchema, HabitIdProvidedSchema  
 from uuid import uuid4
@@ -20,6 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import asyncio
 from periodic_tasks import get_seconds_from_midnight
 from user_xp_level_util import get_level_by_xp
+from rate_limiter import limiter
 
 habit_router = APIRouter()
 load_dotenv()
@@ -29,7 +30,9 @@ XP_AFTER_COMPLETION = int(os.getenv("XP_AFTER_COMPLETION"))
 XP_RANDOM_FACTOR = int(os.getenv("XP_RANDOM_FACTOR"))
 
 @habit_router.post("/add_habit")
+@limiter.limit("20/minute")
 async def add_habit(
+    request: Request,
     habit: AddHabitSchema = Body(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
@@ -68,7 +71,9 @@ async def add_habit(
 
 
 @habit_router.get("/get_habits")
+@limiter.limit("20/minute")
 async def get_habits(
+    request: Request,
     user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
 ) -> List[HabitSchema]:
     user = get_merged_user(user=user, db=db)
@@ -76,7 +81,9 @@ async def get_habits(
 
 
 @habit_router.post("/habit_completion")
+@limiter.limit("20/minute")
 async def habit_completion(
+    request: Request,
     habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
@@ -135,7 +142,9 @@ async def habit_completion(
 
 
 @habit_router.post("/uncomplete_habit")
+@limiter.limit("20/minute")
 async def uncomplete_habit(
+    request: Request,
     habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
@@ -175,7 +184,9 @@ async def uncomplete_habit(
         raise HTTPException(status_code=500, detail="Error while worrking with database")
 
 @habit_router.post("/delete_habit")
+@limiter.limit("20/minute")
 async def delete_habit(
+    request: Request,
     habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
@@ -198,7 +209,9 @@ async def delete_habit(
 
 
 @habit_router.get("/get_completions")
+@limiter.limit("20/minute")
 async def get_completions(
+    request: Request,
     habit_id: HabitIdProvidedSchema = Header(...),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),

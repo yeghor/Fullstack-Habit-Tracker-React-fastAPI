@@ -12,6 +12,9 @@ from utils_router import utils_router
 import time
 from typing import Any
 import hashlib
+from rate_limiter import limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import Limiter, _rate_limit_exceeded_handler
 
 load_dotenv()
 
@@ -37,8 +40,11 @@ scheduler_interval.add_job(
     
 scheduler_interval.start()
 
-
 app = FastAPI()
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.include_router(auth_router)
 app.include_router(habit_router)
 app.include_router(utils_router)

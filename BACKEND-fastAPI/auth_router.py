@@ -17,18 +17,20 @@ from authorization_utils import get_user_depends
 from sqlalchemy.exc import SQLAlchemyError
 import random
 from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
-from rate_limiter import rate_limit
+from rate_limiter import limiter
 
 auth_router = APIRouter()
     
 @auth_router.get("/")
-@rate_limit(periods=60, max_calls=5)
+@limiter.limit("20/minute")
 async def test(request: Request) -> str:
     return "Hello World: " + str(random.randint(1, 100)) 
 
 
 @auth_router.post("/register")
+@limiter.limit("20/minute")
 async def register(
+    request: Request,
     user_data: RegisterSchema = Body(...),
     db: Session = Depends(get_db),
 ) -> TokenSchema:
@@ -94,7 +96,9 @@ async def register(
 
 
 @auth_router.post("/login")
+@limiter.limit("20/minute")
 async def login(
+    request: Request,
     user_data: LoginSchema = Body(...),
     db: Session = Depends(get_db),
 ) -> TokenSchema:
@@ -150,7 +154,9 @@ async def login(
 
 
 @auth_router.post("/logout")
+@limiter.limit("20/minute")
 async def loogut(
+    request: Request,
     token_dict: TokenProvidedSchema = Body(..., example={"token": "Bearer ..."}),
     db: Session = Depends(get_db),
 ) -> None:
@@ -169,7 +175,9 @@ async def loogut(
 
 
 @auth_router.get("/get_user_profile")
+@limiter.limit("20/minute")
 async def get_user_profile(
+    request: Request,
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ) -> UserSchema:
@@ -201,7 +209,9 @@ async def get_user_profile(
     return UserSchema(**user_mapping)
 
 @auth_router.post("/change_username")
+@limiter.limit("20/minute")
 async def change_username(
+    request: Request,
     new_username: Annotated[str, Body(title="New usernaname", min_length=3, max_length=50)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
@@ -218,7 +228,9 @@ async def change_username(
         raise HTTPException(status_code=500, detail="Error while working with database")
 
 @auth_router.post("/change_password")
+@limiter.limit("20/minute")
 async def change_password(
+    request: Request,
     new_password: Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
