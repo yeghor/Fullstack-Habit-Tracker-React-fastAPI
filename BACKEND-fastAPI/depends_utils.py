@@ -1,35 +1,34 @@
 from database import session_local
 from models import JWTTable
-from fastapi import HTTPException
+from fastapi import HTTPException, Body
 import re
 from dotenv import load_dotenv
 import os
-from models import Users
+from models import Users, Habits
 from sqlalchemy.orm import Session
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
 from fastapi import Header
 from sqlalchemy.exc import SQLAlchemyError
 from jwt.exceptions import PyJWTError
-from schemas import TokenProvidedSchema
+from schemas import TokenProvidedSchema, HabitIdProvidedSchema
 
 load_dotenv()
 
 
-def authorize_token(token: str) -> None:
-    db = session_local()
+def authorize_token(token: str, db: Session) -> None:
     try:
-        token = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
-        if not token:
+        db_token = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
+        if not db_token:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
-    finally:
-        db.close()
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Error while working with database (token authorization)")
 
 
-def prepare_authorization_token(authorization: str) -> str:
-    if not authorization.startswith("Bearer "):
+def prepare_authorization_token(token: str) -> str:
+    if not token.startswith("Bearer "):
         raise HTTPException(status_code=400, detail="Invalid authorization header")
 
-    token = authorization.replace("Bearer ", "")
+    token = token.replace("Bearer ", "")
     return token
 
 
@@ -44,11 +43,13 @@ def verify_credentials(username, email):
         raise HTTPException(status_code=400, detail="Invalid Email")
 
 
-def get_user_depends(token: TokenProvidedSchema = Header(...)) -> Users:
+def get_user_depends(token = Header(...)) -> Users:
     db = session_local()
     try:
-        token = prepare_authorization_token(token.token)
-        authorize_token(token)
+        token = prepare_authorization_token(token=token)
+        print("starting auth")
+        authorize_token(token=token, db=db)
+        print("finished auth")
         try:
             payload = extract_payload(token)
         except PyJWTError:
@@ -58,5 +59,22 @@ def get_user_depends(token: TokenProvidedSchema = Header(...)) -> Users:
             return user
         except SQLAlchemyError:
             raise HTTPException(status_code=500, detail="Error while working with database (Depends functions)")
+    finally:
+        db.close()
+
+def get_habit_depends(habit_id: HabitIdProvidedSchema =  Body(...)):
+    try:
+        try:
+            db: Session = session_local()
+            habit = db.query(Habits).filter(Habits.habit_id == habit_id.habit_id).first()
+        except SQLAlchemyError:
+            raise HTTPException(status_code=500, detail="Error while working with the database")
+        except Exception:
+            raise HTTPException(status_code=500, detail="Uknown error occured")
+        
+        if not habit:
+            raise HTTPException(status_code=400, detail="No habit with such ID")
+
+        return habit
     finally:
         db.close()

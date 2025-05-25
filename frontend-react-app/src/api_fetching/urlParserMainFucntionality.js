@@ -32,7 +32,7 @@ export const fetchAddHabit = async (habitName, habitDesc, resetAt, token) => {
     const response = await fetch(addHabitURL, {
         method: "POST",
         headers: {
-            "content-type": "application/json",
+            "Content-Type": "application/json",
             "token": "Bearer " + token
         },
         body: JSON.stringify({
@@ -48,9 +48,11 @@ export const fetchHabitCompletion = async (habitID, token) => {
     const response = await fetch(habitCompletionURL, {
         method: "POST",
         headers: {
-            "habit-id": habitID,
+            "Content-Type": "application/json",
             "token": "Bearer " + token
-        }
+        }, body: JSON.stringify({
+            "habit_id": habitID,
+        })
     });
     return response
 };
@@ -59,9 +61,11 @@ export const fetchUncompleteHabit = async (habitID, token) => {
     const response = await fetch(uncompleteHabitURL, {
         method: "POST",
         headers: {
-            "habit-id": habitID,
+            "Content-Type": "application/json",
             "token": "Bearer " + token
-        }
+        }, body: JSON.stringify({
+            "habit_id": habitID,
+        })
     });
     return response
 };
@@ -70,9 +74,11 @@ export const fetchDeleteHabit = async (habitID, token) => {
     const response = await fetch(deleteHabitURL, {
         method: "POST",
         headers: {
-            "habit-id": habitID,
+            "Content-Type": "application/json",
             "token": "Bearer " + token
-        }
+        }, body: JSON.stringify({
+            "habit_id": habitID,
+        })
     });
     return response
 };
@@ -81,9 +87,10 @@ export const fetchGetHabitCompletion = async (habitID, token) => {
     const response = await fetch(getHabitCompletionsURL, {
         method: "GET",
         headers: {
-            "habit-id": habitID,
             "token": "Bearer " + token
-        },
+        }, body: JSON.stringify({
+            "habit_id": habitID,
+        })
     });
     return response;
 };

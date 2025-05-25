@@ -25,4 +25,15 @@ def get_merged_user(user: Users, db: Session) -> Users:
     try:
         return db.merge(user)
     except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Database error occured")
+        raise HTTPException(status_code=500, detail="Error while working with database (merging user)")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Uknown error occured. PLease, try again later (merging user)")
+
+def get_merged_habit(habit: Habits, db: Session):
+    try:
+        habit = db.merge(habit)
+        return habit
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Error while working with database (merging habit)")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Uknown error occured. PLease, try again later (merging habit)")

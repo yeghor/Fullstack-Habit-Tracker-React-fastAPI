@@ -38,12 +38,8 @@ export const Habits = () => {
                     handleResponseError(response, responseJSON, navigate, setToken);
                     setUNIXFromMidnight(responseJSON.UNIX_time);
                 } catch (err) {
-                    if(response.status === 401) {
-                        navigate("/register")
-                        return
-                    } else {
-                        handleResponseError(response, responseJSON, navigate)
-                    };   
+                    console.error(err);
+                    handleResponseError(response, responseJSON, navigate)  
                 }
 
                 try {

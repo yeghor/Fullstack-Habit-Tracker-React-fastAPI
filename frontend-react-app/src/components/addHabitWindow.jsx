@@ -37,10 +37,16 @@ const AddHabitWindow = (props) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
-        const reponseJSON = response.json();
+        try {
+            const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
+            const reponseJSON = response.json();
+        } catch (err) {
+            console.error(err);
+            handleResponseError(response, responseJSON, navigate);
+        };
 
-        if(!response.ok) { handleResponseError(response, reponseJSON, navigate, setToken, setErrorMessage); return; }
+
+        if(!response.ok) { handleResponseError(response, reponseJSON, navigate, setToken, setErrorMessage); return; };
         
         props.setLoadHabits(!props.loadHabits);
 
@@ -58,10 +64,10 @@ const AddHabitWindow = (props) => {
         const resetAtUnix = ((resetHours * 60) * 60) + (resetMinutes * 60);
 
         if(resetTimeArray.includes(resetAtUnix)) {
-            setTimeErrorMessage("You're already added this resetting time!")
-            return
+            setTimeErrorMessage("You're already added this resetting time!");
+            return;
         } 
-        setTimeErrorMessage(null)
+        setTimeErrorMessage(null);
 
         const updatedResetArray = [...resetTimeArray];
         updatedResetArray.push(resetAtUnix);
@@ -185,7 +191,6 @@ const AddHabitWindow = (props) => {
           aria-label="Close"
           type="button"
         >
-          ×
         </button>
       </div>
     </div>

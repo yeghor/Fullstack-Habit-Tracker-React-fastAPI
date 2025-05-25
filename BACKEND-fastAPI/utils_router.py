@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request
-from authorization_utils import get_user_depends
+from depends_utils import get_user_depends
 from models import Users
 from periodic_tasks import get_seconds_from_midnight
 from sqlalchemy.orm import Session

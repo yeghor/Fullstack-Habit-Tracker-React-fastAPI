@@ -5,10 +5,11 @@ from uuid import uuid4
 import datetime
 from models import Users, JWTTable, Habits, HabitCompletions
 from sqlalchemy.orm import Session
-from authorization_utils import (
+from depends_utils import (
     get_user_depends,
+    get_habit_depends,
 )
-from db_utils import get_db, get_merged_user
+from db_utils import get_db, get_merged_user, get_merged_habit
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
 from ValidationUtils.validate_entries import validate_string, validate_reset_time
 import datetime
@@ -30,6 +31,8 @@ XP_AFTER_COMPLETION = int(os.getenv("XP_AFTER_COMPLETION"))
 XP_RANDOM_FACTOR = int(os.getenv("XP_RANDOM_FACTOR"))
 
 MAX_HABITS = int(os.getenv("MAX_HABITS"))
+
+# Providing Request object to every root because slowAPI requires it.
 
 @habit_router.post("/add_habit")
 @limiter.limit("20/minute")
@@ -70,7 +73,7 @@ async def add_habit(
 
         db.commit()
     except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+        raise HTTPException(status_code=500, detail="Error while working with database")
 
     return new_habit
 
@@ -79,7 +82,8 @@ async def add_habit(
 # @limiter.limit("20/minute")
 async def get_habits(
     request: Request,
-    user: Users = Depends(get_user_depends), db: Session = Depends(get_db)
+    user: Users = Depends(get_user_depends),
+    db: Session = Depends(get_db)
 ) -> List[HabitSchema]:
     user = get_merged_user(user=user, db=db)
     return user.habits
@@ -89,20 +93,12 @@ async def get_habits(
 @limiter.limit("20/minute")
 async def habit_completion(
     request: Request,
-    habit_id: HabitIdProvidedSchema = Header(...),
+    habit: Habits = Depends(get_habit_depends),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
     user = get_merged_user(user=user, db=db)
-    habit_id = habit_id.habit_id
-
-    try:
-        habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
-
-    if not habit:
-        raise HTTPException(status_code=400, detail="No habit with such id")
+    habit = get_merged_habit(habit=habit, db=db)
 
     if habit.completed:
         raise HTTPException(
@@ -139,7 +135,7 @@ async def habit_completion(
             habit.completed = True
 
         except SQLAlchemyError:
-            raise HTTPException(status_code=500, detail="Erorr while working with database")
+            raise HTTPException(status_code=500, detail="Error while working with database")
     finally:
         db.commit()
         db.refresh(habit_completion)
@@ -150,22 +146,18 @@ async def habit_completion(
 @limiter.limit("20/minute")
 async def uncomplete_habit(
     request: Request,
-    habit_id: HabitIdProvidedSchema = Header(...),
+    habit: Habits = Depends(get_habit_depends),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):
     user = get_merged_user(user=user, db=db)
+    habit = get_merged_habit(habit=habit, db=db)
 
-    habit_id = habit_id.habit_id
     try:
-        habit: Habits = db.query(Habits).filter(Habits.habit_id == habit_id).first()
         habit_completion = db.query(HabitCompletions).order_by(HabitCompletions.completed_at).first()
 
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while worrking with database")
-
-    if not habit:
-        raise HTTPException(status_code=400, detail="No such habit")
 
     if not habit_completion:
         raise HTTPException(status_code=400, detail="No habit completion entries were made")
@@ -192,24 +184,17 @@ async def uncomplete_habit(
 @limiter.limit("20/minute")
 async def delete_habit(
     request: Request,
-    habit_id: HabitIdProvidedSchema = Header(...),
+    habit = Depends(get_habit_depends),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
     user = get_merged_user(user=user, db=db)
-    habit_id = habit_id.habit_id
-    try:
-        habit_to_delete = db.query(Habits).filter(Habits.habit_id == habit_id).first()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+    habit = get_merged_habit(habit=habit, db=db)
 
-    if not habit_to_delete:
-        raise HTTPException(status_code=400, detail="Habit with this id doesn't exist")
+    if habit.user_id != user.user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
 
-    if habit_to_delete.user_id != user.user_id:
-        raise HTTPException(status_code=400, detail="Unauthorized. User id in habit owner doesn't match.")
-
-    db.delete(habit_to_delete)
+    db.delete(habit)
     db.commit()
 
 
@@ -217,18 +202,14 @@ async def delete_habit(
 @limiter.limit("20/minute")
 async def get_completions(
     request: Request,
-    habit_id: HabitIdProvidedSchema = Header(...),
+    habit = Depends(get_habit_depends),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> List[HabitCompletionSchema]:
-    habit_id = habit_id.habit_id
     user = get_merged_user(user=user, db=db)
-    try:
-        habit = db.query(Habits).filter(Habits.habit_id == habit_id).first()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+    habit = get_merged_habit(habit=habit, db=db)
 
-    if not habit:
-        raise HTTPException(status_code=400, detail="No habit with such id")
+    if habit.user_id != user.user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
 
     return habit.completions

@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Body, Header, Depends, APIRouter, Request
+from fastapi import HTTPException, Body, Depends, APIRouter, Request
 from typing import Annotated
 from schemas import TokenSchema, UserSchema, RegisterSchema, LoginSchema, TokenProvidedSchema
 from GeneratingAuthUtils import jwt_token_handling, password_handling
@@ -6,14 +6,13 @@ from uuid import uuid4
 import datetime
 from models import Users, JWTTable
 from sqlalchemy.orm import Session
-from jwt.exceptions import PyJWTError, InvalidTokenError, DecodeError
-from authorization_utils import (
+from jwt.exceptions import PyJWTError, InvalidTokenError
+from depends_utils import (
     prepare_authorization_token,
-    authorize_token,
     verify_credentials,
+    get_user_depends
 )
 from db_utils import get_db, get_merged_user
-from authorization_utils import get_user_depends
 from sqlalchemy.exc import SQLAlchemyError
 import random
 from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
@@ -160,7 +159,7 @@ async def loogut(
     token_dict: TokenProvidedSchema = Body(..., example={"token": "Bearer ..."}),
     db: Session = Depends(get_db),
 ) -> None:
-    token = prepare_authorization_token(authorization=token_dict.token)
+    token = prepare_authorization_token(token=token_dict.token)
 
     try:
         jwt_entry: JWTTable = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
