@@ -20,6 +20,7 @@ const AddHabitWindow = (props) => {
     const [ resetMinutes, setResetMinutes ] = useState(Number);
 
     const [ timeErrorMessage, setTimeErrorMessage ] = useState(null);
+    const [ errorMessage, setErrorMessage ] = useState("")
 
     const formatResetTime = (time) => {
         const hours = Math.floor(time / 3600);
@@ -38,8 +39,9 @@ const AddHabitWindow = (props) => {
 
         const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
         const reponseJSON = response.json();
-        handleResponseError(response, reponseJSON, navigate, setToken);
 
+        if(!response.ok) { handleResponseError(response, reponseJSON, navigate, setToken, setErrorMessage); return; }
+        
         props.setLoadHabits(!props.loadHabits);
 
         props.toggle();
@@ -76,6 +78,8 @@ const AddHabitWindow = (props) => {
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Add habit</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            {errorMessage && <p className="text-red-700">{errorMessage}</p>}
+
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Name:
             </label>

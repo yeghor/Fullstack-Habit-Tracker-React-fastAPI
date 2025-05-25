@@ -37,7 +37,6 @@ const UserProfile = () => {
                 const responseJSON = await response.json();
 
                 handleResponseError(response, responseJSON, navigate, setToken);
-                console.log(responseJSON);
                 setProfile(responseJSON);
             } catch (err) {
                 console.error(err);

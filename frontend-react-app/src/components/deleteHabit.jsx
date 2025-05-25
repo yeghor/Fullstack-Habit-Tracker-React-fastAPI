@@ -22,7 +22,7 @@ const DeleteHabit = (props) => {
 
         handleResponseError(response, reponseJSON, navigate, setToken);
         
-
+        props.setHabitsNumber(props.habitsNumber - 1);
         let updatedHabits = [...props.habits];
         delete updatedHabits[props.index];
         props.setHabits(updatedHabits);

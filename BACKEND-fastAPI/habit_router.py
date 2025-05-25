@@ -29,6 +29,8 @@ load_dotenv()
 XP_AFTER_COMPLETION = int(os.getenv("XP_AFTER_COMPLETION"))
 XP_RANDOM_FACTOR = int(os.getenv("XP_RANDOM_FACTOR"))
 
+MAX_HABITS = int(os.getenv("MAX_HABITS"))
+
 @habit_router.post("/add_habit")
 @limiter.limit("20/minute")
 async def add_habit(
@@ -38,6 +40,9 @@ async def add_habit(
     db: Session = Depends(get_db),
 ) -> HabitSchema:
     user = get_merged_user(user=user, db=db)
+
+    if len(user.habits) + 1 > MAX_HABITS:
+        raise HTTPException(status_code=400, detail="You can't add more habits. Each user can have up to 10 habits.")
 
     if not validate_string(habit.habit_name) or not validate_string(habit.habit_desc):
         raise HTTPException(status_code=400, detail="Invalid habit name or description")
@@ -71,7 +76,7 @@ async def add_habit(
 
 
 @habit_router.get("/get_habits")
-@limiter.limit("20/minute")
+# @limiter.limit("20/minute")
 async def get_habits(
     request: Request,
     user: Users = Depends(get_user_depends), db: Session = Depends(get_db)

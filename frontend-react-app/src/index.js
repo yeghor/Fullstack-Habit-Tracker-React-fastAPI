@@ -35,6 +35,7 @@ function Main() {
                     <Route path='/login-timeout' element={<LoginTimeOut />} />
                     <Route path='/internal-server-error' element={<InternalServerError />} />
                     <Route path='/user-profile' element={<UserProfile />} />
+                    <Route path='/to-many-requests' element={<div>Too many requests. PLEASE STOP!</div>} />
                 </Routes> 
             </TokenContext.Provider>
         </BrowserRouter>

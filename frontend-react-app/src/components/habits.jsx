@@ -20,36 +20,59 @@ export const Habits = () => {
     const [refreshHabits, setRefreshHabits] = useState(false)
     const [loading, setLoading] = useState(false)
 
+    const [ UNIXFromMidnight, setUNIXFromMidnight ] = useState(null)
+
+    const [ habitsNumber, setHabitsNumber ] = useState(null)
+
     useEffect(() => {
         const fetchHabits = async () => {
-            if(!token) {
-                navigate("/register");
-            };
-
-            setLoading(true);
             try {
-                const response = await fetchGetHabits(token);
-                const responseJSON = await response.json();
-                if(response.ok) {
-                    let updatedDataWithResetAt = []
-                    for(let i = 0; i < responseJSON.length; i++) {
-                        let habit = responseJSON[i]
-                        const timeString = await getClosestResetTime(habit.reset_at, habit.completed);
-                        habit.resetAt = timeString;
-                        updatedDataWithResetAt.push(habit)
-                    };
-                    setHabits(updatedDataWithResetAt);
-                } else {
+                if(!token) {
+                    navigate("/register");
+                };
+                setLoading(true);
+                
+                try {
+                    const response = await fetchGetUNIXFromMidnight(token);
+                    const responseJSON = await response.json();
+                    handleResponseError(response, responseJSON, navigate, setToken);
+                    setUNIXFromMidnight(responseJSON.UNIX_time);
+                } catch (err) {
                     if(response.status === 401) {
                         navigate("/register")
                         return
                     } else {
                         handleResponseError(response, responseJSON, navigate)
-                    }
+                    };   
                 }
-            } catch (err) {
-                console.error(err);
-                navigate("/internal-server-error");
+
+                try {
+                    const response = await fetchGetHabits(token);
+                    const responseJSON = await response.json();
+
+                    handleResponseError(response, responseJSON, navigate, setToken);
+
+                    let updatedDataWithResetAt = []
+                    for(let i = 0; i < responseJSON.length; i++) {
+                        let habit = responseJSON[i];
+                        const timeString = await getClosestResetTime(habit.reset_at, habit.completed);
+                        habit.resetAt = timeString;
+                        updatedDataWithResetAt.push(habit);
+                        setHabitsNumber(i + 1); // updating current length of habits
+                    };
+
+                    setHabits(updatedDataWithResetAt);
+
+                    if(response.status === 401) {
+                        navigate("/register")
+                        return
+                    } else {
+                        handleResponseError(response, responseJSON, navigate, setToken);
+                    };
+                } catch (err) {
+                    console.error(err);
+                    handleResponseError(response, responseJSON, navigate, setToken);
+                };
             } finally {
                 setLoading(false);
             }
@@ -82,13 +105,6 @@ export const Habits = () => {
 
     const getClosestResetTime = async (resetAt, completed) => {
         try {
-            const response = await fetchGetUNIXFromMidnight(token);           
-            const responseJSON = await response.json(); 
-
-            handleResponseError(response, responseJSON, navigate, setToken);
-
-            const UNIXFromMidnight = Number(responseJSON.UNIX_time);
-
             let requiredWindow = null;
             let resetAtKeys = Object.keys(resetAt);
             resetAtKeys = resetAtKeys.sort()
@@ -96,21 +112,21 @@ export const Habits = () => {
                 let currentWindow = resetAtKeys[i];
                 if(UNIXFromMidnight < Number(currentWindow)) {
                     requiredWindow = currentWindow;
-                    break
+                    break;
                 };
             };
             if(!requiredWindow) {
                 if(completed) {
-                    return "You're all done! Check your habits tomorrow."
+                    return "You're all done! Check your habits tomorrow.";
                 } else {
-                    return "No more resets until tomorrow."
+                    return "No more resets until tomorrow.";
                 };
             };
             return minutesToReset(requiredWindow, UNIXFromMidnight);
             } catch (err) {
                 console.error(err);
                 navigate("/internal-server-error", { state: {  } });
-            }
+            };
         };
 
     if(token) { 
@@ -120,7 +136,7 @@ export const Habits = () => {
                 <section className="bg-white dark:bg-gray-900 min-h-screen">
                     <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-12">
                         <div className="flex justify-center mb-8 gap-5">
-                            <AddHabitButton loadHabits={refreshHabits} setLoadHabits={setRefreshHabits} />
+                            {habitsNumber < 10 && <AddHabitButton loadHabits={refreshHabits} setLoadHabits={setRefreshHabits}/>}
                             <button
                                 className="py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition"
                                 onClick={() => setRefreshHabits(!refreshHabits)}
@@ -139,7 +155,7 @@ export const Habits = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                                     {habits.map((habit, index) =>
                                         habit && (
-                                            <div>
+                                            <div key={index}>
                                             <div
                                                 key={habit.habit_id}
                                                 className="bg-gray-50 rounded-2xl shadow p-6 flex flex-col justify-between w-full h-auto transition-transform hover:scale-105 hover:shadow-2xl border border-gray-200"
@@ -172,7 +188,7 @@ export const Habits = () => {
                                                     </label>
                                                 </div>
                                                 <div>
-                                                    <DeleteHabit setHabits={setHabits} habit={habit} habits={habits} index={index} />
+                                                    <DeleteHabit setHabits={setHabits} habit={habit} habits={habits} index={index} setHabitsNumber={setHabitsNumber} habitsNumber={habitsNumber} />
                                                 </div>
                                             </div>
                                         </div>

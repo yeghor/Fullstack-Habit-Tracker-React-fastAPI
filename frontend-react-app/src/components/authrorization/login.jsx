@@ -37,16 +37,12 @@ const Login = () => {
             const response = await fetchLogin(username, password);
             const responseJSON = await response.json();
 
-            if(response.status == 400) {
-                setErrorMessage("Invalid username or email")
-                return
-            } else if(response.status == 401) {
-                setErrorMessage("Invalid credentials.")
-                return
-            }
+            if(response.status == 401) {
+                setErrorMessage("Invalid credentials.");
+                return;
+            };
 
-            handleResponseError(response, responseJSON, navigate, setToken, "/");
-        
+            handleResponseError(response, responseJSON, navigate, setToken, null, "/");
             setToken(responseJSON.token);
         } catch (err) {
             console.error("Error while logging in ", err);

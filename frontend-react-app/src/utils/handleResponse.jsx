@@ -1,22 +1,39 @@
-export const handleResponseError = async (response, responseJSON, navigate, setToken, navigateTo,) => {
+export const handleResponseError = async (response, responseJSON, navigate, setToken, setErrorMessage, navigateToIfSucces) => {
     if(!response.ok) {
         if(response.status === 401) {
-            setToken()
+            setToken();
             navigate("/register");
-            return
+            return;
+        } else if(response.status === 422) {
+            if(!setErrorMessage) {
+                navigate("/internal-server-error", { state: {errorMessage: "The server was unable to process the request because it contains invalid data." } });
+                return
+            };
+            setErrorMessage("The server was unable to process the request because it contains invalid data.");
+            return;
+        } else if (response.status === 429) {
+            navigate("/internal-server-error", { state: {errorMessage: "Too many requests. Please, make a pause. And try again later" } });
+            return;
+        } else if(response.status == 400) {
+            if(!setErrorMessage) {
+                navigate("/internal-server-error", { state: {errorMessage: "The server was unable to process the request because it contains invalid data." } });
+                return
+            };
+            setErrorMessage(responseJSON.detail);
+            return;
         };
-        try {
+
+        if(responseJSON.detail) {
             navigate("/internal-server-error", { state: {errorMessage: responseJSON.detail} });
-            return
-        } catch (err) {
-            console.error("Failed to parse JSON response ", err)
-            navigate("/internal-server-error", { state: {errorMessage: "Uknown Error Occured"}});
-            return
+            return;            
         };
+        navigate("/internal-server-error", { state: {errorMessage: "Uknown Error Occured. Please, try again later"}});
+        return;
+
     } else {
-        if(navigateTo) {
-            navigate(navigateTo)
+        if(navigateToIfSucces) {
+            navigate(navigateToIfSucces);
         };
-        return
+        return;
     };
 };
