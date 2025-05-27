@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 from jwt.exceptions import PyJWTError
+from fastapi import HTTPException
+
 load_dotenv()
 
 JWT_SECRET_KEY_TEMP = os.getenv("JWT_SECRET_KEY_TEMP")
@@ -28,7 +30,7 @@ def extract_payload(token) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET_KEY_TEMP, algorithms=["HS256"])
     except PyJWTError:
-        raise ValueError("Invalid token")
+        raise HTTPException(status_code=400, detail="Invalid authorization token")
 
 
 def check_token_expiery(token) -> bool:

@@ -10,7 +10,8 @@ from jwt.exceptions import PyJWTError, InvalidTokenError
 from depends_utils import (
     prepare_authorization_token,
     verify_credentials,
-    get_user_depends
+    get_user_depends,
+    check_token_expiery_depends,
 )
 from db_utils import get_db, get_merged_user
 from sqlalchemy.exc import SQLAlchemyError
@@ -230,12 +231,16 @@ async def change_username(
 @limiter.limit("20/minute")
 async def change_password(
     request: Request,
+    old_password: Annotated[str, Body(title="Old password", min_length=8, max_length=30)],
     new_password: Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):  
     user = get_merged_user(user=user, db=db)
     
+    if not password_handling.check_password(old_password, user.hashed_password.encode("utf-8")):
+        raise HTTPException(status_code=400, detail="Old password didn't match")
+
     if password_handling.check_password(new_password, user.hashed_password.encode("utf-8")):
         raise HTTPException(status_code=400, detail="New password can't be same as current!")
 
@@ -249,3 +254,11 @@ async def change_password(
         db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while working with database")
+    
+@auth_router.get("/check_token")
+@limiter.limit("20/minute")
+async def check_token(
+    request: Request,
+    expires_at = Depends(check_token_expiery_depends)
+):
+    return expires_at

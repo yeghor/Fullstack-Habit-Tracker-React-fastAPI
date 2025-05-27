@@ -6,7 +6,7 @@ import NavBar from "./navBar";
 import { useNavigate } from "react-router";
 import { handleResponseError } from "../utils/handleResponse";
 import "../index.css"
-import { fetchChangePassword, fetchChangeUsername } from "../api_fetching/urlParserAuthorization";
+import { fetchChangePassword, fetchChangeUsername, fetchCheckTokenExpiery } from "../api_fetching/urlParserAuthorization";
 import { defineCookies } from "../utils/cookieToken";
 import { navigateToServerInternalError } from "../utils/navigateUtils";
 
@@ -22,6 +22,7 @@ const UserProfile = () => {
 
     const [ userXP, setUserXP ] = useState(null);
 
+    const [ oldPassword, setOldPassword ] = useState(null);
     const [ newPasswordFirst, setNewPasswordFirst ] = useState(null);
     const [ newPasswordSecond, setNewPasswordSecond ] = useState(null);
 
@@ -58,16 +59,15 @@ const UserProfile = () => {
             };
 
             try {
-                const response = await fetchChangePassword(newPasswordFirst, token);
+                const response = await fetchChangePassword(oldPassword, newPasswordFirst, token);
                 const responseJSON = await response.json();
                 
-                if(response.status === 400) {
-                    setErrorMessage(responseJSON.detail);
+                handleResponseError(response, responseJSON, navigate, setToken, setErrorMessage);
+                
+                if(!response.ok) { // if response !=200 - handling error in handleResponseError and changing errorMessage state
                     return;
                 };
-                
-                handleResponseError(response, responseJSON, navigate, setToken);
-                
+
                 setRefresh(!refresh);
                 setShowChangePasswordForm(!showChangePasswordForm);
             } catch (err) {
@@ -122,8 +122,11 @@ const UserProfile = () => {
                             <h2 className="text-2xl font-bold text-gray-800 mb-1">{profile.username}</h2>
                             <p className="text-gray-500 text-sm">{profile.email}</p>
                         </div>
-                        <p>XP - {profile.user_xp_total}</p>
-                        <p>To achieve next level remaining - {profile.next_level_xp_remaining}</p>
+                        <div className="text-center font-semibold text-gray-700 mb-3">
+                            <p>Level - {profile.level}</p>
+                            <p>XP - {profile.user_xp_total}</p>
+                            <p>To achieve next level XP remaining - {profile.next_level_xp_remaining}</p>                            
+                        </div>
                         <div className="w-full bg-gray-100 rounded-full flex justify-start">
                             <div style={{ width: `${getPersentageOfWidthProgressBar() * 100}%` }} className={`rounded-full bg-blue-500 text-white p-1.5 font-semibold`}></div>
                         </div>
@@ -150,8 +153,7 @@ const UserProfile = () => {
                                     ✕
                                 </button>
                             </div>
-
-                            <h5 className="text-xl font-medium text-gray-900 dark:text-white">
+                            <h5 className="text-xl font-semibold text-gray-900 dark:text-white">
                             Please, fill up form with new secure password
                             </h5>
                             {errorMessage && (
@@ -159,6 +161,21 @@ const UserProfile = () => {
                                 <p className="font-semibold text-red-600">{errorMessage}</p>
                             </div>
                             )}
+                            <div>
+                            <label htmlFor="passwordOld" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Old password
+                            </label>
+                            <input
+                                onChange={(e) => setOldPassword(e.target.value)}
+                                type="password"
+                                name="passwordOld"
+                                id="passwordOne"
+                                placeholder="New Password"
+                                minLength="8"
+                                required
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                            />
+                            </div>
                             <div>
                             <label htmlFor="passwordOne" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 New Password
@@ -176,7 +193,7 @@ const UserProfile = () => {
                             </div>
                             <div>
                             <label htmlFor="passwordTwo" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Confirm
+                                Confirm new password
                             </label>
                             <input
                                 onChange={(e) => setNewPasswordSecond(e.target.value)}
@@ -193,7 +210,7 @@ const UserProfile = () => {
                             type="submit"
                             className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                             >
-                            Change Password
+                            <span className="font-semibold">Change Password</span>
                             </button>
                         </form>
                         </div>
@@ -209,7 +226,7 @@ const UserProfile = () => {
                             </button>
                         </div>
 
-                        <h5 className="text-xl font-medium text-gray-900 dark:text-white">
+                        <h5 className="text-xl font-semibold text-gray-900 dark:text-white">
                         Please, fill up form with your new username
                         </h5>
                         {errorMessage && (
@@ -217,24 +234,26 @@ const UserProfile = () => {
                             <p className="font-semibold text-red-600">{errorMessage}</p>
                         </div>
                         )}
-                        <label htmlFor="newUsername" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            New Username    
-                        </label>
-                        <input
-                            onChange={(e) => setNewUsername(e.target.value)}
-                            type="text"
-                            name="newUsername"
-                            id="newUsername"
-                            placeholder="New Username"
-                            minLength="3"
-                            required
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                        />
+                        <div>
+                            <label htmlFor="newUsername" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                New Username    
+                            </label>
+                            <input
+                                onChange={(e) => setNewUsername(e.target.value)}
+                                type="text"
+                                name="newUsername"
+                                id="newUsername"
+                                placeholder="New Username"
+                                minLength="3"
+                                required
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                            />
+                        </div>
                         <button
                         type="submit"
                         className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                         >
-                        Change Username
+                        <span className="font-semibold">Change Password</span>
                         </button>
                     </form>
                     </div>

@@ -1,4 +1,4 @@
-export const handleResponseError = async (response, responseJSON, navigate, setToken, setErrorMessage, navigateToIfSucces) => {
+export const handleResponseError = (response, responseJSON, navigate, setToken, setErrorMessage, navigateToIfSucces) => {
     if(!response.ok) {
         if(response.status === 401) {
             setToken();
@@ -15,7 +15,7 @@ export const handleResponseError = async (response, responseJSON, navigate, setT
             navigate("/internal-server-error", { state: {errorMessage: "Too many requests. Please, make a pause. And try again later" } });
             return;
         } else if(response.status == 400) {
-            if(!setErrorMessage) {
+            if(!setErrorMessage) { // setting error message only if response statuc code 400 - bad request. To inform user about incorrect data input.
                 navigate("/internal-server-error", { state: {errorMessage: "The server was unable to process the request because it contains invalid data." } });
                 return
             };

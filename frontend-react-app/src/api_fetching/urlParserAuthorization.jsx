@@ -5,16 +5,30 @@ import {
     logoutURL,
     changePasswordURL,
     changeUsernameURL,
+    checkTokenExpiery
     } from "./urls";
 
-export async function fetchChangePassword(newPassword, token) {
+export async function fetchCheckTokenExpiery(token) {
+    const response = fetch(checkTokenExpiery, {
+        method: "GET",
+        headers: {
+            "token": "Bearer " + token
+        }
+    });
+    return response;
+};
+
+export async function fetchChangePassword(oldPassword, newPassword, token) {
     const response = fetch(changePasswordURL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "token": "Bearer " + token
         },
-        body: JSON.stringify(newPassword)
+        body: JSON.stringify({
+            "old_password": oldPassword,
+            "new_password": newPassword
+        })
     });
     return response;
 };
@@ -39,7 +53,7 @@ export async function fetchLogin(username, password) {
         },
         body: JSON.stringify({
             "username": username,
-            "password": password,
+            "password": password
         }),
     });
     return response

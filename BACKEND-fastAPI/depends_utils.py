@@ -1,6 +1,6 @@
 from database import session_local
 from models import JWTTable
-from fastapi import HTTPException, Body
+from fastapi import HTTPException, Body, Header
 import re
 from dotenv import load_dotenv
 import os
@@ -11,6 +11,8 @@ from fastapi import Header
 from sqlalchemy.exc import SQLAlchemyError
 from jwt.exceptions import PyJWTError
 from schemas import TokenProvidedSchema, HabitIdProvidedSchema
+import datetime
+from GeneratingAuthUtils.jwt_token_handling import extract_payload
 
 load_dotenv()
 
@@ -47,9 +49,7 @@ def get_user_depends(token = Header(...)) -> Users:
     db = session_local()
     try:
         token = prepare_authorization_token(token=token)
-        print("starting auth")
         authorize_token(token=token, db=db)
-        print("finished auth")
         try:
             payload = extract_payload(token)
         except PyJWTError:
@@ -76,5 +76,17 @@ def get_habit_depends(habit_id: HabitIdProvidedSchema =  Body(...)):
             raise HTTPException(status_code=400, detail="No habit with such ID")
 
         return habit
+    finally:
+        db.close()
+
+def check_token_expiery_depends(token: TokenProvidedSchema = Header(...)) -> str:
+    try:
+        db: Session = session_local()
+        token = prepare_authorization_token(token=token.token)
+        authorize_token(token=token, db=db)
+
+        payload = extract_payload(token=token)
+        
+        return datetime.datetime.fromtimestamp(int(payload["expires"])).time()
     finally:
         db.close()
