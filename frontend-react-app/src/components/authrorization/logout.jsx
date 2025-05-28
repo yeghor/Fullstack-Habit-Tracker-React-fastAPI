@@ -12,9 +12,16 @@ const Logout = () => {
 
     const clickLogoutHandler = () => {
         const logout = async () => {
-            await fetchLogout(token, setToken);
-            setToken();
-            navigate("/register")
+            try {
+                await fetchLogout(token, setToken);
+                setToken();
+                navigate("/register")                
+            } catch(err) {
+                console.error(err);
+                navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
+                return;
+            };
+
         };
         logout();      
     };

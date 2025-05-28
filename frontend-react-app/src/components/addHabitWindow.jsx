@@ -39,17 +39,17 @@ const AddHabitWindow = (props) => {
 
         try {
             const response = await fetchAddHabit(habitName, habitsDesc, resetTimeArray, token);
-            const reponseJSON = response.json();
+            const responseJSON = await response.json();
+
+            if(!response.ok) { handleResponseError(response, responseJSON, navigate, setToken, setErrorMessage); return; };
+
         } catch (err) {
             console.error(err);
-            handleResponseError(response, responseJSON, navigate);
+            navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
+            return;
         };
 
-
-        if(!response.ok) { handleResponseError(response, reponseJSON, navigate, setToken, setErrorMessage); return; };
-        
         props.setLoadHabits(!props.loadHabits);
-
         props.toggle();
     };
 

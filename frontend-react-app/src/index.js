@@ -11,6 +11,7 @@ import { Habits } from './components/habits.jsx';
 import LoginTimeOut from './components/loginTimeout.jsx';
 import UserProfile from './components/userProfile.jsx';
 import InternalServerError from './components/internalServerError.jsx';
+import HabitCompletions from './components/habitCompletions.jsx';
 
 function Main() {
     const [token , setToken] = useState(() => { return localStorage.getItem("token")});
@@ -36,6 +37,7 @@ function Main() {
                     <Route path='/internal-server-error' element={<InternalServerError />} />
                     <Route path='/user-profile' element={<UserProfile />} />
                     <Route path='/to-many-requests' element={<div>Too many requests. PLEASE STOP!</div>} />
+                    <Route path='/habit_completions' element={<HabitCompletions />} />
                 </Routes> 
             </TokenContext.Provider>
         </BrowserRouter>

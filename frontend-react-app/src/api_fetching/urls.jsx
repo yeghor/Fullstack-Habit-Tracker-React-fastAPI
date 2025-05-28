@@ -15,7 +15,8 @@ export const addHabitURL = `${BASE_URL}/add_habit`;
 export const getHabitsURL = `${BASE_URL}/get_habits`;
 export const habitCompletionURL = `${BASE_URL}/habit_completion`;
 export const deleteHabitURL = `${BASE_URL}/delete_habit`;
-export const getHabitCompletionsURL = `${BASE_URL}/get_completions`;
+export const getHabitCompletionsURL = `${BASE_URL}/get_habit_completions`;
+export const getAllCompletionsURL = `${BASE_URL}/get_all_completions`;
 export const uncompleteHabitURL = `${BASE_URL}/uncomplete_habit`;
 
 export const getUNIXFromMidnightURL = `${BASE_URL}/get_UNIX_from_midnight`;

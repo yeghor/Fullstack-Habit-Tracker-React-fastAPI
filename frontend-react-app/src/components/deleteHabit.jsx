@@ -17,16 +17,24 @@ const DeleteHabit = (props) => {
     const handleDelete = async (e) => {
         e.preventDefault();
 
-        const response = await fetchDeleteHabit(props.habit.habit_id, token);
-        const reponseJSON = response.json();
+        try {
+            const response = await fetchDeleteHabit(props.habit.habit_id, token);
+            const reponseJSON = response.json();
 
-        handleResponseError(response, reponseJSON, navigate, setToken);
-        
-        props.setHabitsNumber(props.habitsNumber - 1);
-        let updatedHabits = [...props.habits];
-        delete updatedHabits[props.index];
-        props.setHabits(updatedHabits);
-        setPop(false);
+            handleResponseError(response, reponseJSON, navigate, setToken);
+            
+            props.setHabitsNumber(props.habitsNumber - 1);
+            let updatedHabits = [...props.habits];
+            delete updatedHabits[props.index];
+            props.setHabits(updatedHabits);
+        } catch(err) {
+            console.error(err);
+            navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
+            return;
+        } finally {
+            setPop(false); 
+        };
+
     };
 
     return(

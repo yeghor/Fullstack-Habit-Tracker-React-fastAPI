@@ -49,12 +49,13 @@ const Register = () => {
                 return
             }
 
-            handleResponseError(response, responseJSON, navigate, setToken, "/") 
+            handleResponseError(response, responseJSON, navigate, null, setToken, "/") 
         
             setToken(responseJSON.token);
         } catch (err) {
-            setErrorMessage(err)
-            console.error("Error while trying to register ", err);
+            console.error(err);
+            navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
+            return;
         };
     };
 

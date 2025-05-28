@@ -67,7 +67,8 @@ export const Habits = () => {
                     };
                 } catch (err) {
                     console.error(err);
-                    handleResponseError(response, responseJSON, navigate, setToken);
+                    navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
+                    return;
                 };
             } finally {
                 setLoading(false);

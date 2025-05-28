@@ -100,6 +100,9 @@ async def habit_completion(
     user = get_merged_user(user=user, db=db)
     habit = get_merged_habit(habit=habit, db=db)
 
+    if user.user_id != habit.user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
+
     if habit.completed:
         raise HTTPException(
             status_code=409,
@@ -153,6 +156,9 @@ async def uncomplete_habit(
     user = get_merged_user(user=user, db=db)
     habit = get_merged_habit(habit=habit, db=db)
 
+    if user.user_id != habit.habit_id:
+        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
+
     try:
         habit_completion = db.query(HabitCompletions).order_by(HabitCompletions.completed_at).first()
 
@@ -198,7 +204,7 @@ async def delete_habit(
     db.commit()
 
 
-@habit_router.get("/get_completions")
+@habit_router.post("/get_habit_completions")
 @limiter.limit("20/minute")
 async def get_completions(
     request: Request,
@@ -213,3 +219,24 @@ async def get_completions(
         raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
 
     return habit.completions
+
+@habit_router.get("/get_all_completions")
+@limiter.limit("20/minute")
+async def get_all_completions(
+    request: Request,
+    user: Users = Depends(get_user_depends),
+    db: Session = Depends(get_db)
+) -> List[HabitCompletionSchema]:
+    user = get_merged_user(user=user, db=db)
+    
+    list_to_return = []
+
+    for completion in user.completions:
+        list_to_return.append(HabitCompletionSchema(
+            completion_id=completion.completion_id,
+            habit_id=completion.habit_id,
+            habit_name=completion.habit.habit_name,
+            completed_at=str(completion.completed_at)
+        ))
+    
+    return reversed(list_to_return)

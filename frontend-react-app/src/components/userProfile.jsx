@@ -96,7 +96,7 @@ const UserProfile = () => {
                 setShowChangeUsernameForm(!showChangeUsernameForm);
             } catch(err) {
                 console.error(err);
-                navigateToServerInternalError(navigate);
+                navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
                 return;
             };
         };

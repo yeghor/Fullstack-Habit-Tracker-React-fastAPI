@@ -14,8 +14,8 @@ class Users(Base):
     xp = Column(Integer, default=0)
     level = Column(Integer, default=0)
 
-    habits = relationship("Habits", back_populates="owner")
-    completions = relationship("HabitCompletions", back_populates="owner")
+    habits = relationship("Habits", back_populates="owner", cascade="all,delete")
+    completions = relationship("HabitCompletions", back_populates="owner", cascade="all,delete")
 
 
 class JWTTable(Base):
@@ -37,7 +37,7 @@ class Habits(Base):
     completed = Column(Boolean, default=False)
     reset_at = Column(JSON)
 
-    completions = relationship("HabitCompletions", back_populates="habit")
+    completions = relationship("HabitCompletions", back_populates="habit", cascade="all,delete")
     owner = relationship("Users", back_populates="habits")
 
 

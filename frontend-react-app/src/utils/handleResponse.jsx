@@ -35,5 +35,5 @@ export const handleResponseError = (response, responseJSON, navigate, setToken, 
             navigate(navigateToIfSucces);
         };
         return;
-    };
+    }; 
 };

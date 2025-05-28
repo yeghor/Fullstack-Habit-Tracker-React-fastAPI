@@ -45,7 +45,9 @@ const Login = () => {
             handleResponseError(response, responseJSON, navigate, setToken, null, "/");
             setToken(responseJSON.token);
         } catch (err) {
-            console.error("Error while logging in ", err);
+                console.error(err);
+                navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
+                return;
         };
     };
 

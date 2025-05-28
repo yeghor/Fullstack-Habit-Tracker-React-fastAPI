@@ -1,3 +1,4 @@
+import { cookieExpiresSeconds } from "../consts";
 import {
     addHabitURL,
     getHabitsURL,
@@ -5,7 +6,8 @@ import {
     deleteHabitURL,
     getHabitCompletionsURL,
     getUserProfileURL,
-    uncompleteHabitURL
+    uncompleteHabitURL,
+    getAllCompletionsURL,
 } from "./urls";
 
 export const fetchGetUserProfile = async (token) => {
@@ -14,6 +16,29 @@ export const fetchGetUserProfile = async (token) => {
         headers: {
             "token": "Bearer " + token
         }
+    });
+    return response;
+};
+
+// export const fetchGetHabitCompeltions = async (token, habitID) => {
+//     const response = await fetch(getHabitCompletionsURL, {
+//         method: "GET",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "token": "Bearer " + token,
+//         }, body: JSON.stringify({
+//             "habit_id": habitID,
+//         }),
+//     });
+//     return response;
+// };
+
+export const fetchGetAllCompletions = async (token) => {
+    const response = await fetch(getAllCompletionsURL, {
+        method: "GET",
+        headers: {
+            "token": "Bearer " + token,
+        },
     });
     return response;
 };
