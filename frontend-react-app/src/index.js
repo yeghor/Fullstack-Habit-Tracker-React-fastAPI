@@ -37,7 +37,7 @@ function Main() {
                     <Route path='/internal-server-error' element={<InternalServerError />} />
                     <Route path='/user-profile' element={<UserProfile />} />
                     <Route path='/to-many-requests' element={<div>Too many requests. PLEASE STOP!</div>} />
-                    <Route path='/habit_completions' element={<HabitCompletions />} />
+                    <Route path='/habit_completions/:id' element={<HabitCompletions />} />
                 </Routes> 
             </TokenContext.Provider>
         </BrowserRouter>

@@ -1,34 +1,53 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { defineCookies } from "../utils/cookieToken";
-import { fetchGetAllCompletions, fetchGetHabitCompeltions } from "../api_fetching/urlParserMainFucntionality";
+import { fetchGetAllCompletions, fetchGetHabitCompeltions, fetchGetHabits } from "../api_fetching/urlParserMainFucntionality";
 import { handleResponseError } from "../utils/handleResponse";
 import { useNavigate } from "react-router";
 import NavBar from "./navBar";
+import { useParams } from "react-router-dom";
 
 const HabitCompletions = () => {
+    const id = useParams();
+
     const [ token, setToken ] = defineCookies();
 
     const navigate = useNavigate();
 
     const [ allCompletions, setAllCompletions ] = useState([]);
+    const [ habits, setHabits ] = useState([]);
+    const [ visibleCompletions, setVisibleCompletions ] = useState([])
+    
     const [ reload, setReload ] = useState(false);
 
     const [ loading, setLoading ] = useState(false)
 
     useEffect(() => {
-        const fetchAllCompletions = async () => {
+        const fetchAll = async () => {
             try {
                 setLoading(true);
-                let response = null;
-                let responseJSON = null;
+                let responseCompletions = null;
+                let responseCompletionsJSON = null;
+                let responseHabits = null;
+                let responseHabitsJSON = null;  
 
                 try {
-                    response = await fetchGetAllCompletions(token);
-                    responseJSON = await response.json();
+                    responseCompletions = await fetchGetAllCompletions(token);
+                    responseCompletionsJSON = await responseCompletions.json();
+                    
+                    responseHabits = await fetchGetHabits(token);
+                    responseHabitsJSON = await responseHabits.json();
+                    
 
-                    handleResponseError(response, responseJSON, navigate, setToken);
-                    setAllCompletions(responseJSON);
+                    handleResponseError(responseCompletions, responseCompletionsJSON, navigate, setToken);
+                    handleResponseError(responseHabits, responseHabitsJSON, navigate, setToken);
+
+                    console.log(responseCompletionsJSON)
+
+                    setHabits(responseHabitsJSON);
+                    setAllCompletions(responseCompletionsJSON);
+                    setVisibleCompletions(responseCompletionsJSON)
+                    
                 } catch(err) {
                     console.error(err);
                     navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
@@ -39,13 +58,17 @@ const HabitCompletions = () => {
             }
 
         };
-        fetchAllCompletions();
+        fetchAll();
     }, [reload]);
 
     const formatUNIX = (UNIX) => {
         const date = new Date(UNIX * 1000);
         return `${date.getMonth().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getDay().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`;
     };
+
+    const handleSortByHabit = () => {
+        return
+    }
 
     if(loading) {
         return(
@@ -63,6 +86,19 @@ const HabitCompletions = () => {
     return(
         <div>
             <NavBar />
+            <div className="flex justify-center my-5">
+                <p className="font-bold text-3xl">Your Completions</p>
+            </div>
+            <div className="flex justify-center">
+                <div className="rounded-lg w-2/3 shadow-xl flex flex-wrap flex-row gap-3 p-2 justify-center">
+                    { habits.map((habit) => {
+                        return (
+                            <button onClick={handleSortByHabit} className="p-2 text-white bg-blue-600 rounded-xl font-semibold hover:bg-blue-700">{habit.habit_name}</button>
+                        )
+                    }) }
+                </div>                
+            </div>
+
             <div className="w-full max-w-2xl mx-auto mt-8 space-y-4">
                 {allCompletions.map((completion) => (
                     <div
