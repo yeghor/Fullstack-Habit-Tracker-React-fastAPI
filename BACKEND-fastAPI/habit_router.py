@@ -156,7 +156,7 @@ async def uncomplete_habit(
     user = get_merged_user(user=user, db=db)
     habit = get_merged_habit(habit=habit, db=db)
 
-    if user.user_id != habit.habit_id:
+    if user.user_id != habit.user_id:
         raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
 
     try:

@@ -8,7 +8,7 @@ import NavBar from "./navBar";
 import { useParams } from "react-router-dom";
 
 const HabitCompletions = () => {
-    const id = useParams();
+    const currentPage = parseInt(useParams().id) || 1;
 
     const [ token, setToken ] = defineCookies();
 
@@ -42,11 +42,9 @@ const HabitCompletions = () => {
                     handleResponseError(responseCompletions, responseCompletionsJSON, navigate, setToken);
                     handleResponseError(responseHabits, responseHabitsJSON, navigate, setToken);
 
-                    console.log(responseCompletionsJSON)
-
                     setHabits(responseHabitsJSON);
                     setAllCompletions(responseCompletionsJSON);
-                    setVisibleCompletions(responseCompletionsJSON)
+                    setVisibleCompletions(responseCompletionsJSON.slice(currentPage*10 -10, currentPage*10));
                     
                 } catch(err) {
                     console.error(err);
@@ -59,48 +57,71 @@ const HabitCompletions = () => {
 
         };
         fetchAll();
-    }, [reload]);
+    }, [currentPage, reload]);
 
     const formatUNIX = (UNIX) => {
         const date = new Date(UNIX * 1000);
         return `${date.getMonth().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getDay().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`;
     };
 
-    const handleSortByHabit = () => {
-        return
-    }
+    const handleSortByHabit = (habitID) => {
+        if(!habitID) {
+            setVisibleCompletions(allCompletions);
+            return;
+        };
+
+        const newVisibleCompletionsRaw = allCompletions.map((completion) => {
+            if(completion.habit_id === habitID) {
+                return completion;
+            } return null;
+        });
+        const newVisibleCompletions = newVisibleCompletionsRaw.filter((completion) => {
+            return completion !== null;
+        });
+            
+        setVisibleCompletions(newVisibleCompletions);
+    };
+
+    const handleNavigate = (direction) => {
+        const newPage = direction === "left" ? currentPage - 1 : currentPage + 1
+        if(newPage < 1) return;
+
+        navigate(`/habit_completions/${newPage}`);
+    };
 
     if(loading) {
         return(
             <div>
                 <NavBar />
-
                 <div className="w-full max-w-2xl mx-auto">
                     <p className="text-xl font-semibold text-center">Loading...</p>
                 </div>                
             </div>
 
-        )
-    }
+        );
+    };
 
     return(
         <div>
             <NavBar />
             <div className="flex justify-center my-5">
-                <p className="font-bold text-3xl">Your Completions</p>
+                <p className="font-bold text-3x">Your Completions</p>
+            </div>
+            <div className="flex justify-center my-2">
+                <button className="p-2 text-white font-bold bg-blue-500 rounded-xl hover:bg-blue-600 transition" onClick={() => handleSortByHabit(null)}>All completions</button>
             </div>
             <div className="flex justify-center">
                 <div className="rounded-lg w-2/3 shadow-xl flex flex-wrap flex-row gap-3 p-2 justify-center">
                     { habits.map((habit) => {
                         return (
-                            <button onClick={handleSortByHabit} className="p-2 text-white bg-blue-600 rounded-xl font-semibold hover:bg-blue-700">{habit.habit_name}</button>
+                            <button key={habit.habit_id}  onClick={() => handleSortByHabit(habit.habit_id)} className="p-2 text-white bg-blue-600 rounded-xl font-semibold hover:bg-blue-700">{habit.habit_name}</button>
                         )
                     }) }
                 </div>                
             </div>
 
             <div className="w-full max-w-2xl mx-auto mt-8 space-y-4">
-                {allCompletions.map((completion) => (
+                {visibleCompletions.map((completion) => (
                     <div
                         key={completion.completion_id}
                         className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-shadow duration-300"
@@ -116,6 +137,12 @@ const HabitCompletions = () => {
                     </div>
                 ))}
             </div>
+            <div className="flex justify-center my-8">
+                <div className="w-36 rounded-xl border-2 shadow-md border-gray-200 p-2 flex justify-between">
+                    <button disabled={currentPage <= 1} onClick={() => handleNavigate("left")}>Previous</button>
+                    <button disabled={currentPage >= Math.ceil(allCompletions.length / 10)} onClick={() => handleNavigate("right")}>Next</button>
+                </div>
+            </div>            
         </div>
     );
 };
