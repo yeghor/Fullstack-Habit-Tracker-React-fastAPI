@@ -27,9 +27,7 @@ export const defineColorTheme = () => {
         cookies.get(darkTheme);
     };
     const toggleTheme = () => {
-        console.log("Toggling theme");
         const darkTheme = cookies.get("darkTheme");
-        console.log(darkTheme);
         cookies.set("darkTheme", !darkTheme);
     };
 
