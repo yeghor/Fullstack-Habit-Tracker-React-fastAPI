@@ -1,16 +1,19 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { defineCookies } from "../utils/cookieToken";
+import { defineCookiesToken } from "../utils/cookieHandling";
 import { fetchGetAllCompletions, fetchGetHabitCompeltions, fetchGetHabits } from "../api_fetching/urlParserMainFucntionality";
 import { handleResponseError } from "../utils/handleResponse";
 import { useNavigate } from "react-router";
 import NavBar from "./navBar";
 import { useParams } from "react-router-dom";
+import { defineColorTheme } from "../utils/cookieHandling";
 
 const HabitCompletions = () => {
     const currentPage = parseInt(useParams().id) || 1;
 
-    const [ token, setToken ] = defineCookies();
+    const [ darkTheme, toggleTheme ] = defineColorTheme();
+
+    const [ token, setToken ] = defineCookiesToken();
 
     const navigate = useNavigate();
 
@@ -23,6 +26,8 @@ const HabitCompletions = () => {
     const [ loading, setLoading ] = useState(false)
 
     useEffect(() => {
+        if(darkTheme) { document.documentElement.classList.toggle("dark") };
+
         const fetchAll = async () => {
             try {
                 setLoading(true);
@@ -61,7 +66,7 @@ const HabitCompletions = () => {
 
     const formatUNIX = (UNIX) => {
         const date = new Date(UNIX * 1000);
-        return `${date.getMonth().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getDay().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`;
+        return `${(date.getMonth()+1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`;
     };
 
     const handleSortByHabit = (habitID) => {
@@ -139,8 +144,8 @@ const HabitCompletions = () => {
             </div>
             <div className="flex justify-center my-8">
                 <div className="w-36 rounded-xl border-2 shadow-md border-gray-200 p-2 flex justify-between">
-                    <button disabled={currentPage <= 1} onClick={() => handleNavigate("left")}>Previous</button>
-                    <button disabled={currentPage >= Math.ceil(allCompletions.length / 10)} onClick={() => handleNavigate("right")}>Next</button>
+                    <button disabled={currentPage <= 1} onClick={() => handleNavigate("left")} className="disabled:text-gray-500 transition">Previous</button>
+                    <button disabled={currentPage >= Math.ceil(allCompletions.length / 10)} onClick={() => handleNavigate("right")} className="disabled:text-gray-500 transition">Next</button>
                 </div>
             </div>            
         </div>

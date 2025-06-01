@@ -10,21 +10,25 @@ import DeleteHabit from "./deleteHabit";
 import { minutesToReset } from "../utils/getTimeUntilReset";
 import { handleResponseError } from "../utils/handleResponse";
 import "../index.css"
-import { defineCookies } from "../utils/cookieToken";
+import { defineCookiesToken } from "../utils/cookieHandling";
+import { defineColorTheme } from "../utils/cookieHandling";
 
 export const Habits = () => {
-    const [token, setToken] = defineCookies();
+    const [token, setToken] = defineCookiesToken();
+    const [ darkTheme, toggleTheme ] = defineColorTheme();
 
     const navigate = useNavigate();
     const [habits, setHabits] = useState([]);
-    const [refreshHabits, setRefreshHabits] = useState(false)
-    const [loading, setLoading] = useState(false)
+    const [refreshHabits, setRefreshHabits] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const [ UNIXFromMidnight, setUNIXFromMidnight ] = useState(null)
+    const [ UNIXFromMidnight, setUNIXFromMidnight ] = useState(null);
 
-    const [ habitsNumber, setHabitsNumber ] = useState(null)
+    const [ habitsNumber, setHabitsNumber ] = useState(null);
 
     useEffect(() => {
+        if(darkTheme) { document.documentElement.classList.toggle("dark") };
+
         const fetchHabits = async () => {
             try {
                 if(!token) {

@@ -7,11 +7,13 @@ import { useNavigate } from "react-router";
 import { handleResponseError } from "../utils/handleResponse";
 import "../index.css"
 import { fetchChangePassword, fetchChangeUsername, fetchCheckTokenExpiery } from "../api_fetching/urlParserAuthorization";
-import { defineCookies } from "../utils/cookieToken";
+import { defineCookiesToken } from "../utils/cookieHandling";
 import { navigateToServerInternalError } from "../utils/navigateUtils";
+import { defineColorTheme } from "../utils/cookieHandling";
 
 const UserProfile = () => {
-    const [token, setToken] = defineCookies();
+    const [token, setToken] = defineCookiesToken();
+    const [ darkTheme, toggleTheme ] = defineColorTheme();
 
     const [ profile, setProfile ] = useState({});
     const [ refresh, setRefresh ] = useState(false);
@@ -31,6 +33,8 @@ const UserProfile = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        if(darkTheme) { document.documentElement.classList.toggle("dark") };
+
         const fetchProfile = async () => {
             setLoading(true);
             try {

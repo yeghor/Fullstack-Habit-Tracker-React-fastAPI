@@ -1,7 +1,7 @@
 import Cookies from "universal-cookie";
 import { cookieExpiresSeconds } from "../consts";
 
-export const defineCookies = () => {
+export const defineCookiesToken = () => {
     const cookies = new Cookies();
 
     const token = cookies.get("token");
@@ -17,3 +17,21 @@ export const defineCookies = () => {
     };
     return [token, setToken];
 };
+
+export const defineColorTheme = () => {
+    const cookies = new Cookies();
+
+    const darkTheme = cookies.get('darkTheme');
+    if(!darkTheme) {
+        cookies.set("darkTheme", false);
+        cookies.get(darkTheme);
+    };
+    const toggleTheme = () => {
+        console.log("Toggling theme");
+        const darkTheme = cookies.get("darkTheme");
+        console.log(darkTheme);
+        cookies.set("darkTheme", !darkTheme);
+    };
+
+    return [ darkTheme, toggleTheme ];
+}

@@ -7,10 +7,10 @@ import { useNavigate } from "react-router"
 import { handleResponseError } from "../../utils/handleResponse";
 import NavBar from "../navBar";
 import { Link } from "react-router-dom";
-import { defineCookies } from "../../utils/cookieToken";
+import { defineCookiesToken } from "../../utils/cookieHandling";
 
 const Register = () => {
-    const [token, setToken] = defineCookies();
+    const [token, setToken] = defineCookiesToken();
 
     let navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState("");

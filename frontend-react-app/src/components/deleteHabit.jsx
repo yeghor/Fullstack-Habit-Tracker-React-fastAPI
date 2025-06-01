@@ -5,10 +5,10 @@ import { fetchDeleteHabit } from "../api_fetching/urlParserMainFucntionality";
 import "../index.css"
 import { useNavigate } from "react-router";
 import { handleResponseError } from "../utils/handleResponse";
-import { defineCookies } from "../utils/cookieToken";
+import { defineCookiesToken } from "../utils/cookieHandling";
 
 const DeleteHabit = (props) => {
-    const [token, setToken] = defineCookies();
+    const [token, setToken] = defineCookiesToken();
 
     const navigate = useNavigate()
     const [pop, setPop] = useState(false);

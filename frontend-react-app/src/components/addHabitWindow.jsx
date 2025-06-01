@@ -5,10 +5,10 @@ import { fetchAddHabit } from "../api_fetching/urlParserMainFucntionality";
 import { TokenContext } from "../tokenContext";
 import { useNavigate } from "react-router";
 import { handleResponseError } from "../utils/handleResponse";
-import { defineCookies } from "../utils/cookieToken";
+import { defineCookiesToken } from "../utils/cookieHandling";
 
 const AddHabitWindow = (props) => {
-    const [token, setToken] = defineCookies();
+    const [token, setToken] = defineCookiesToken();
 
     const navigate = useNavigate();
     const [ resetTimeArray, setResettingTimes ] = useState([]);

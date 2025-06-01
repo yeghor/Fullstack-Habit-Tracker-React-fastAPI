@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router'
 import { useState } from 'react';
 import { TokenContext } from './tokenContext.jsx';
 const root = ReactDOM.createRoot(document.getElementById('root'));
-import { Habits } from './components/habits.jsx';
+import { Habits } from './components/habitsPage.jsx';
 import LoginTimeOut from './components/loginTimeout.jsx';
 import UserProfile from './components/userProfile.jsx';
 import InternalServerError from './components/internalServerError.jsx';

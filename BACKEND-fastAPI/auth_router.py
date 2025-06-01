@@ -64,11 +64,6 @@ async def register(
             status_code=409, detail="User with this username is already exists"
         )
 
-    existing_user: Users = db.query(Users).filter(Users.email == email).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=409, detail="User with this E-mail is already exists"
-        )
 
     try:
         user = Users(
@@ -185,15 +180,15 @@ async def get_user_profile(
 
     level, next_level_xp_remaining = get_level_by_xp(user.xp)
     user.level = level
-    print(next_level_xp_remaining)
+
     current_level_xp = get_xp_nedeed_by_level(user.level - 1)
 
-    user.xp = user.xp - current_level_xp
+    user_xp_total = user.xp - current_level_xp
 
     xp_to_next_level = get_xp_nedeed_by_level(user.level)
 
     user_xp_current = xp_to_next_level - next_level_xp_remaining
-    print(user_xp_current)
+
     user_mapping = {
         "user_id": user.user_id,
         "username": user.username,
@@ -203,7 +198,7 @@ async def get_user_profile(
         "level": user.level,
         "next_level_xp_remaining": next_level_xp_remaining,
         "xp_to_next_level": xp_to_next_level,
-        "user_xp_total": user.xp,
+        "user_xp_total": user_xp_total,
     }
 
     return UserSchema(**user_mapping)
