@@ -10,6 +10,7 @@ import { fetchChangePassword, fetchChangeUsername, fetchCheckTokenExpiery } from
 import { defineCookiesToken } from "../utils/cookieHandling";
 import { navigateToServerInternalError } from "../utils/navigateUtils";
 import { defineColorTheme } from "../utils/cookieHandling";
+import ThemeToggler from "./themeToggler";
 
 const UserProfile = () => {
     const [token, setToken] = defineCookiesToken();
@@ -33,7 +34,6 @@ const UserProfile = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(darkTheme) { document.documentElement.classList.toggle("dark") };
 
         const fetchProfile = async () => {
             setLoading(true);
@@ -113,20 +113,21 @@ const UserProfile = () => {
 
     if(token) {
         return(
-            <div>
+            <div className="bg-white dark:bg-gray-700">
                 <NavBar />
-                <div className="min-h-screen bg-white flex flex-col items-center">
-                    <div className="w-full max-w-md mt-20 bg-white shadow-2xl rounded-3xl p-8 flex flex-col items-center border border-gray-200">
+                <ThemeToggler />
+                <div className="min-h-screen bg-white flex flex-col items-center dark:bg-gray-900">
+                    <div className="w-full max-w-md mt-20 bg-white dark:bg-gray-900 shadow-2xl rounded-3xl p-8 flex flex-col items-center border border-gray-200 dark:borde-gray-900">
                         <div className="flex flex-col items-center mb-6">
                             <img
                                 className="w-24 h-24 rounded-full border-4 border-blue-400 shadow-lg mb-4 object-cover"
                                 src={`https://ui-avatars.com/api/?name=${profile.username || 'User'}&background=4f46e5&color=fff&size=128`}
                                 alt="User avatar"
                             />
-                            <h2 className="text-2xl font-bold text-gray-800 mb-1">{profile.username}</h2>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-1 dark:text-gray-100">{profile.username}</h2>
                             <p className="text-gray-500 text-sm">{profile.email}</p>
                         </div>
-                        <div className="text-center font-semibold text-gray-700 mb-3">
+                        <div className="text-center font-semibold text-gray-700 mb-3 dark:text-gray-100">
                             <p>Level - {profile.level}</p>
                             <p>XP - {profile.user_xp_total}</p>
                             <p>To achieve next level XP remaining - {profile.next_level_xp_remaining}</p>                            
@@ -149,7 +150,7 @@ const UserProfile = () => {
                     </div>
                 </div>
                 {showChangePasswordForm ?
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-white">
                         <div className="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-lg sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
                         <form className="space-y-6" onSubmit={handleChangePassword}>
                             <div className="flex justify-end items-center">
@@ -157,7 +158,7 @@ const UserProfile = () => {
                                     ✕
                                 </button>
                             </div>
-                            <h5 className="text-xl font-semibold text-gray-900 dark:text-white">
+                            <h5 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                             Please, fill up form with new secure password
                             </h5>
                             {errorMessage && (
@@ -166,7 +167,7 @@ const UserProfile = () => {
                             </div>
                             )}
                             <div>
-                            <label htmlFor="passwordOld" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            <label htmlFor="passwordOld" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                                 Old password
                             </label>
                             <input
@@ -196,7 +197,7 @@ const UserProfile = () => {
                             />
                             </div>
                             <div>
-                            <label htmlFor="passwordTwo" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            <label htmlFor="passwordTwo" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                                 Confirm new password
                             </label>
                             <input
@@ -226,7 +227,7 @@ const UserProfile = () => {
                     <form className="space-y-6" onSubmit={handleChangeUsername}>
                         <div className="flex justify-end items-center">
                             <button onClick={() => setShowChangeUsernameForm(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
-                                ✕
+                                Close
                             </button>
                         </div>
 

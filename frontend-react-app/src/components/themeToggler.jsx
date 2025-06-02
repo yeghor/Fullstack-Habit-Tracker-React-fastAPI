@@ -1,22 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { defineColorTheme } from "../utils/cookieHandling";
 import { IoMoon } from "react-icons/io5";
 import { IoSunny } from "react-icons/io5";
 
 const ThemeToggler = () => {
-    const [ darkTheme, toggleTheme ] = defineColorTheme();
+    let [ darkTheme, toggleDarkTheme ] = defineColorTheme();
+    const [ darkThemeState, setDarkThemeState ] = useState(darkTheme);
+    console.log("FROM THEMEROGGLER: ", darkTheme);
 
     const handleToggleTheme = () => {
-        document.documentElement.classList.toggle("dark");
-        toggleTheme();
-    }
+        console.log("toggling")
+        toggleDarkTheme();
+        [ darkTheme, toggleDarkTheme ] = defineColorTheme();
+        setDarkThemeState(!darkThemeState);
+    };
+
+    useEffect(() => {
+        document.documentElement.classList.toggle("dark", darkThemeState);
+    }, [darkThemeState]);
+
 
     return(
         <div className="absolute bottom-4 right-4">
-            <div onClick={() => handleToggleTheme()} className="w-24 flex justify-center align-middle p-2 h-24 shadow-lg rounded-xl ">
+            <div onClick={() => handleToggleTheme()} className="w-24 flex justify-center align-middle p-2 h-24 shadow-lg rounded-xl dark:bg-slate-800">
                 {darkTheme ? 
-                    <button><IoSunny /></button>
-                    : <button><IoMoon /></button>}
+                    <button><IoSunny className="fill-slate-700 dark:fill-gray-100"/></button>
+                    : <button><IoMoon  className="fill-slate-700 dark:fill-gray-100"/></button>}
             </div>
         </div>
     );
