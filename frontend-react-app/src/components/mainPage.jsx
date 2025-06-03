@@ -10,8 +10,6 @@ function MainPage() {
     const [ token, setToken ] = defineCookiesToken();
     const [ darkTheme, toggleTheme ] = defineColorTheme();
 
-    console.log(darkTheme);
-
     if(token) {
         return (
             <div>

@@ -13,11 +13,11 @@ const NavBar = () => {
 
     return(
         <div>
-        <nav className="border-gray-300 border-1">
-            <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        <nav>
+            <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4 dark:bg-gray-900">
             <Link to="/" className="flex items-center justify-between rtl:space-x-reverse">
                 <img src="/logotype.png" className="h-8" alt="Logo pic" />
-                <span className="self-center text-2xl text-gray-800 font-semibold whitespace-nowrap">Home</span>
+                <span className="self-center text-2xl text-gray-800 font-semibold whitespace-nowrap dark:text-white">Home</span>
             </Link>
             <div className="block w-full md:block md:w-auto" id="navbar-default">
                 <ul className="font-semibold flex flex-col md:flex-row p-4 mt-4 gap-4">
@@ -26,15 +26,15 @@ const NavBar = () => {
                     to="/habits"
                     className="inline-block py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition">Habits</Link>
                 </li>
-                <li>
-                    <Link
-                    to="/habit_completions/1"
-                    className="inline-block py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition">Completions</Link>
-                </li>
                 {token ? 
                     <>
                         <li>
-                            <Link className="inline-block py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition" to="/user-profile">Profile</Link> 
+                            <Link
+                            to="/habit_completions/1"
+                            className="inline-block py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition">Completions</Link>
+                        </li>
+                        <li>
+                            <Link className="inline-block py-2 px-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition " to="/user-profile">Profile</Link> 
                         </li>                      
                         <li>
                             <Logout />
@@ -43,10 +43,10 @@ const NavBar = () => {
                 :
                 <>
                     <li>
-                        <Link className="block py-2 px-3 text-black" to="/login">Login</Link>
+                        <Link className="block py-2 px-3 text-black dark:text-white" to="/login">Login</Link>
                     </li>
                     <li>
-                        <Link className="block py-2 px-3 text-black" to="/register">Register</Link>
+                        <Link className="block py-2 px-3 text-black dark:text-white" to="/register">Register</Link>
                     </li>  
                 </>
                 }      

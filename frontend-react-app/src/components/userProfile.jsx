@@ -45,7 +45,7 @@ const UserProfile = () => {
                 setProfile(responseJSON);
             } catch (err) {
                 console.error(err);
-                navigateToServerInternalError(navigate);
+                navigateToServerInternalError(navigate, "Uknown Error Occured. Please, try again later");
                 return 
             } finally {
                 setLoading(false);

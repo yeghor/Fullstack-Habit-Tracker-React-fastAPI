@@ -31,26 +31,25 @@ export const Habits = () => {
 
         const fetchHabits = async () => {
             try {
-                if(!token) {
-                    navigate("/register");
-                };
                 setLoading(true);
                 
                 try {
                     const response = await fetchGetUNIXFromMidnight(token);
                     const responseJSON = await response.json();
-                    handleResponseError(response, responseJSON, navigate, setToken);
+                    const errorFlag = handleResponseError(response, responseJSON, navigate, setToken);
+                    if(errorFlag) { return };
                     setUNIXFromMidnight(responseJSON.UNIX_time);
                 } catch (err) {
                     console.error(err);
-                    handleResponseError(response, responseJSON, navigate)  
+                    navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
+                    return;
                 }
 
                 try {
                     const response = await fetchGetHabits(token);
                     const responseJSON = await response.json();
-
-                    handleResponseError(response, responseJSON, navigate, setToken);
+                    const errorFlag = handleResponseError(response, responseJSON, navigate, setToken);
+                    if(errorFlag) { return };
 
                     let updatedDataWithResetAt = []
                     for(let i = 0; i < responseJSON.length; i++) {
@@ -62,13 +61,6 @@ export const Habits = () => {
                     };
 
                     setHabits(updatedDataWithResetAt);
-
-                    if(response.status === 401) {
-                        navigate("/register")
-                        return
-                    } else {
-                        handleResponseError(response, responseJSON, navigate, setToken);
-                    };
                 } catch (err) {
                     console.error(err);
                     navigate("/internal-server-error", { state: {errorMessage: "Server down. Please, try again later"}});
@@ -91,11 +83,13 @@ export const Habits = () => {
             if(e.target.checked) {
                 const response = await fetchHabitCompletion(habitID, token);
                 const responseJSON = await response.json();
-                handleResponseError(response, responseJSON, navigate, setToken);
+                const errorFlag = handleResponseError(response, responseJSON, navigate, setToken);
+                if(errorFlag) { return };
             } else {
                 const response = await fetchUncompleteHabit(habitID, token);
                 const responseJSON = await response.json();
-                handleResponseError(response, responseJSON, navigate, setToken);
+                const errorFlag = handleResponseError(response, responseJSON, navigate, setToken);
+                if(errorFlag) { return };
             };            
         } catch (err) {
             console.error(err);

@@ -9,6 +9,7 @@ import {
     uncompleteHabitURL,
     getAllCompletionsURL,
 } from "./urls";
+import { handleResponseError } from "../utils/handleResponse";
 
 export const fetchGetUserProfile = async (token) => {
     const response = await fetch(getUserProfileURL, {

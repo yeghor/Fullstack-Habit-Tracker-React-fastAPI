@@ -3,21 +3,21 @@ export const handleResponseError = (response, responseJSON, navigate, setToken, 
         if(response.status === 401) {
             setToken();
             navigate("/register");
-            return;
+            return true;
         } else if(response.status === 422) {
             if(!setErrorMessage) {
                 navigate("/internal-server-error", { state: {errorMessage: "The server was unable to process the request because it contains invalid data." } });
-                return
+                return true;
             };
             setErrorMessage("The server was unable to process the request because it contains invalid data.");
-            return;
+            return true;
         } else if (response.status === 429) {
             navigate("/internal-server-error", { state: {errorMessage: "Too many requests. Please, make a pause. And try again later" } });
-            return;
+            return true;
         } else if(response.status == 400) {
             if(!setErrorMessage) { // setting error message only if response statuc code 400 - bad request. To inform user about incorrect data input.
                 navigate("/internal-server-error", { state: {errorMessage: "The server was unable to process the request because it contains invalid data." } });
-                return
+                return true
             };
             setErrorMessage(responseJSON.detail);
             return;
@@ -25,15 +25,15 @@ export const handleResponseError = (response, responseJSON, navigate, setToken, 
 
         if(responseJSON.detail) {
             navigate("/internal-server-error", { state: {errorMessage: responseJSON.detail} });
-            return;            
+            return true;            
         };
         navigate("/internal-server-error", { state: {errorMessage: "Uknown Error Occured. Please, try again later"}});
-        return;
+        return true;
 
     } else {
         if(navigateToIfSucces) {
             navigate(navigateToIfSucces);
         };
-        return;
+        return false;
     }; 
 };

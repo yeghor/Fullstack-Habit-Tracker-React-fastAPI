@@ -44,9 +44,12 @@ const HabitCompletions = () => {
                     responseHabitsJSON = await responseHabits.json();
                     
 
-                    handleResponseError(responseCompletions, responseCompletionsJSON, navigate, setToken);
-                    handleResponseError(responseHabits, responseHabitsJSON, navigate, setToken);
-
+                    let errorFlag = handleResponseError(responseCompletions, responseCompletionsJSON, navigate, setToken);
+                    console.log(errorFlag)
+                    if(errorFlag) { return };
+                    errorFlag = handleResponseError(responseHabits, responseHabitsJSON, navigate, setToken);
+                    if(errorFlag) { return };
+                
                     setHabits(responseHabitsJSON);
                     setAllCompletions(responseCompletionsJSON);
                     setVisibleCompletions(responseCompletionsJSON.slice(currentPage*10 -10, currentPage*10));
