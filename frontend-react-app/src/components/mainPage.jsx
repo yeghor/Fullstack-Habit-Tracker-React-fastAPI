@@ -1,9 +1,6 @@
-import React from "react";
 import NavBar from "./navBar";
 import "../index.css"
 import { defineCookiesToken } from "../utils/cookieHandling";
-import { useEffect } from "react";
-import ThemeToggler from "./themeToggler";
 import { defineColorTheme } from "../utils/cookieHandling";
 
 function MainPage() {
@@ -14,7 +11,6 @@ function MainPage() {
         return (
             <div>
                 <NavBar />
-                <ThemeToggler />
                 <div>
                     <section className="bg-white dark:bg-gray-900">
                         <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-12">
@@ -38,7 +34,6 @@ function MainPage() {
         return (
             <div>
                 <NavBar />
-                <ThemeToggler />
                 <div>
                     <section className="bg-white dark:bg-gray-900">
                         <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-12">
@@ -64,6 +59,5 @@ function MainPage() {
         );
     };
 };
-
 
 export default MainPage;

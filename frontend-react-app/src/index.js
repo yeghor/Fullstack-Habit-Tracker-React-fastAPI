@@ -12,34 +12,22 @@ import LoginTimeOut from './components/loginTimeout.jsx';
 import UserProfile from './components/userProfile.jsx';
 import InternalServerError from './components/internalServerError.jsx';
 import HabitCompletions from './components/habitCompletions.jsx';
+import ThemeWrapper from './utils/themeWrapper.jsx';
 
 function Main() {
-    const [token , setToken] = useState(() => { return localStorage.getItem("token")});
-    const updateToken = (newToken) => {
-        if(newToken) {
-            setToken(newToken);
-            localStorage.setItem("token", newToken);
-        } else {
-            setToken(undefined);
-            localStorage.removeItem("token");
-        };
-    };
-
     return( 
         <BrowserRouter>
-            <TokenContext.Provider value={[token, updateToken]}>
-                <Routes>
-                    <Route path='/' element={<MainPage />} />
-                    <Route path='/habits' element={<Habits />} />
-                    <Route path='/login' element={<Login />} />
-                    <Route path='/register' element={<Register />} />
-                    <Route path='/login-timeout' element={<LoginTimeOut />} />
-                    <Route path='/internal-server-error' element={<InternalServerError />} />
-                    <Route path='/user-profile' element={<UserProfile />} />
-                    <Route path='/to-many-requests' element={<div>Too many requests. PLEASE STOP!</div>} />
-                    <Route path='/habit_completions/:id' element={<HabitCompletions />} />
-                </Routes> 
-            </TokenContext.Provider>
+            <Routes>
+                <Route path='/' element={<ThemeWrapper><MainPage /></ThemeWrapper>} />
+                <Route path='/habits' element={<ThemeWrapper><Habits /></ThemeWrapper>} />
+                <Route path='/login' element={<ThemeWrapper><Login /></ThemeWrapper>} />
+                <Route path='/register' element={<ThemeWrapper><Register /></ThemeWrapper>} />
+                <Route path='/login-timeout' element={<ThemeWrapper><LoginTimeOut /></ThemeWrapper>} />
+                <Route path='/internal-server-error' element={<ThemeWrapper><InternalServerError /></ThemeWrapper>} />
+                <Route path='/user-profile' element={<ThemeWrapper><UserProfile /></ThemeWrapper>} />
+                <Route path='/to-many-requests' element={<ThemeWrapper><div>Too many requests. PLEASE STOP!</div></ThemeWrapper>} />
+                <Route path='/habit_completions/:id' element={<ThemeWrapper><HabitCompletions /></ThemeWrapper>} />
+            </Routes> 
         </BrowserRouter>
     
     );

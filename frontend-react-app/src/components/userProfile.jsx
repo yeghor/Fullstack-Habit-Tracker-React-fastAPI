@@ -113,7 +113,7 @@ const UserProfile = () => {
 
     if(token) {
         return(
-            <div className="bg-white dark:bg-gray-700">
+            <div>
                 <NavBar />
                 <ThemeToggler />
                 <div className="min-h-screen bg-white flex flex-col items-center dark:bg-gray-900">

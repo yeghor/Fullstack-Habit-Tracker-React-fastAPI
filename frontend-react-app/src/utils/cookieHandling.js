@@ -33,4 +33,4 @@ export const defineColorTheme = () => {
     };
 
     return [ darkTheme, toggleTheme ];
-}
+};

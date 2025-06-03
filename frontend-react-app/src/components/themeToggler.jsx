@@ -6,10 +6,8 @@ import { IoSunny } from "react-icons/io5";
 const ThemeToggler = () => {
     let [ darkTheme, toggleDarkTheme ] = defineColorTheme();
     const [ darkThemeState, setDarkThemeState ] = useState(darkTheme);
-    console.log("FROM THEMEROGGLER: ", darkTheme);
 
     const handleToggleTheme = () => {
-        console.log("toggling")
         toggleDarkTheme();
         [ darkTheme, toggleDarkTheme ] = defineColorTheme();
         setDarkThemeState(!darkThemeState);
