@@ -132,13 +132,13 @@ const HabitCompletions = () => {
                 {visibleCompletions.map((completion) => (
                     <div
                         key={completion.completion_id}
-                        className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-shadow duration-300"
+                        className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-shadow duration-300 dark:bg-gray-800 dark:border-slate-600"
                     >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                            <div className="text-lg font-semibold text-gray-800">
+                            <div className="text-lg font-semibold text-gray-800 dark:text-white">
                                 {completion.habit_name}
                             </div>
-                            <div className="text-sm text-gray-500 mt-2 sm:mt-0">
+                            <div className="text-sm text-gray-500 mt-2 sm:mt-0 dark:text-white">
                                 Completed: {formatUNIX(completion.completed_at)}
                             </div>
                         </div>
@@ -147,8 +147,8 @@ const HabitCompletions = () => {
             </div>
             <div className="flex justify-center my-8">
                 <div className="w-36 rounded-xl border-2 shadow-md border-gray-200 p-2 flex justify-between">
-                    <button disabled={currentPage <= 1} onClick={() => handleNavigate("left")} className="disabled:text-gray-500 transition">Previous</button>
-                    <button disabled={currentPage >= Math.ceil(allCompletions.length / 10)} onClick={() => handleNavigate("right")} className="disabled:text-gray-500 transition">Next</button>
+                    <button disabled={currentPage <= 1} onClick={() => handleNavigate("left")} className="disabled:text-gray-500 transition dark:text-gray-200 dark:disabled:text-gray-500">Previous</button>
+                    <button disabled={currentPage >= Math.ceil(allCompletions.length / 10)} onClick={() => handleNavigate("right")} className="disabled:text-gray-500 transition dark:text-gray-200 dark:disabled:text-gray-500">Next</button>
                 </div>
             </div>            
         </div>

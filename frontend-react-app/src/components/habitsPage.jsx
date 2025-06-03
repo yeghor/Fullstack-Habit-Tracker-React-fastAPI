@@ -27,8 +27,6 @@ export const Habits = () => {
     const [ habitsNumber, setHabitsNumber ] = useState(null);
 
     useEffect(() => {
-        if(darkTheme) { document.documentElement.classList.toggle("dark") };
-
         const fetchHabits = async () => {
             try {
                 setLoading(true);
@@ -139,7 +137,7 @@ export const Habits = () => {
                                 Reload Habits
                             </button>
                         </div>
-                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                        <div className="bg-white rounded-2xl shadow-lg p-6 dark:bg-gray-800">
                             {loading ? (
                                 <div className="flex justify-center items-center h-64">
                                     <p className="text-4xl font-bold text-gray-800 dark:text-white">Loading...</p>
@@ -153,16 +151,16 @@ export const Habits = () => {
                                             <div key={index}>
                                             <div
                                                 key={habit.habit_id}
-                                                className="bg-gray-50 rounded-2xl shadow p-6 flex flex-col justify-between w-full h-auto transition-transform hover:scale-105 hover:shadow-2xl border border-gray-200"
+                                                className="bg-gray-50 dark:bg-slate-900 rounded-2xl shadow p-6 flex flex-col justify-between w-full h-auto transition-transform hover:scale-105 hover:shadow-2xl border border-gray-200 dark:border-slate-600"
                                             >
                                                 <div>
-                                                    <h3 className="text-xl font-bold mb-2 truncate text-gray-900">{habit.habit_name}</h3>
-                                                    <p className="text-base mb-2 break-words text-gray-700">{habit.habit_desc}</p>
-                                                    <p className="text-xs text-blue-700">{habit.resetAt}</p>
+                                                    <h3 className="text-xl font-bold mb-2 truncate text-gray-900 dark:text-white">{habit.habit_name}</h3>
+                                                    <p className="text-base mb-2 break-words text-gray-700 dark:text-white">{habit.habit_desc}</p>
+                                                    <p className="text-xs text-blue-700 dark:text-blue-400">{habit.resetAt}</p>
                                                 </div>
                                                 <div className="flex items-center justify-between mt-4">
                                                     <label className="flex items-center space-x-2 text-sm select-none cursor-pointer">
-                                                        <span>Mark as completed:</span>
+                                                        <span className="text-black dark:text-white ">Mark as completed:</span>
                                                         <span className="relative">
                                                             <input
                                                                 type="checkbox"

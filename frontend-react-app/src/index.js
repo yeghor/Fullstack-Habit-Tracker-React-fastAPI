@@ -13,6 +13,7 @@ import UserProfile from './components/userProfile.jsx';
 import InternalServerError from './components/internalServerError.jsx';
 import HabitCompletions from './components/habitCompletions.jsx';
 import ThemeWrapper from './utils/themeWrapper.jsx';
+import { defineColorTheme } from './utils/cookieHandling.js';
 
 function Main() {
     return( 

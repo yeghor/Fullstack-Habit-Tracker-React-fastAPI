@@ -1,15 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Logout from "./authrorization/logout";
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { TokenContext } from "../tokenContext";
 import Login from "./authrorization/login.jsx"
 import Register from "./authrorization/register.jsx"
-import { defineCookiesToken } from "../utils/cookieHandling.js";
+import { defineColorTheme, defineCookiesToken } from "../utils/cookieHandling.js";
 
 const NavBar = () => {
     const [token, setToken] = defineCookiesToken();
-    
+    const [ darkTheme, setDarkTheme ] = defineColorTheme();
+
+    useEffect(() => {
+        document.documentElement.classList.toggle("dark", darkTheme)
+    });
 
     return(
         <div>

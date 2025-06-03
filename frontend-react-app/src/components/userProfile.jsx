@@ -117,7 +117,7 @@ const UserProfile = () => {
                 <NavBar />
                 <ThemeToggler />
                 <div className="min-h-screen bg-white flex flex-col items-center dark:bg-gray-900">
-                    <div className="w-full max-w-md mt-20 bg-white dark:bg-gray-900 shadow-2xl rounded-3xl p-8 flex flex-col items-center border border-gray-200 dark:borde-gray-900">
+                    <div className="w-full max-w-md mt-20 bg-white dark:bg-gray-900 shadow-2xl rounded-3xl p-8 flex flex-col items-center border border-gray-200 dark:border-white/0">
                         <div className="flex flex-col items-center mb-6">
                             <img
                                 className="w-24 h-24 rounded-full border-4 border-blue-400 shadow-lg mb-4 object-cover"
