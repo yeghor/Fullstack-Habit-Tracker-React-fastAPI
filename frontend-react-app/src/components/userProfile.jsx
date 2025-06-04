@@ -155,7 +155,7 @@ const UserProfile = () => {
                         <form className="space-y-6" onSubmit={handleChangePassword}>
                             <div className="flex justify-end items-center">
                                 <button onClick={() => setShowChangePasswordForm(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
-                                    ✕
+                                    Close
                                 </button>
                             </div>
                             <h5 className="text-xl font-semibold text-gray-900 dark:text-gray-100">

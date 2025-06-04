@@ -196,6 +196,5 @@ export const Habits = () => {
     );
     } else {
         navigate("/login");
-        return null;
     }
 };

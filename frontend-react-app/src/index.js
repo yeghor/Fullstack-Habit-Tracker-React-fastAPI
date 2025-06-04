@@ -16,6 +16,7 @@ import ThemeWrapper from './utils/themeWrapper.jsx';
 import { defineColorTheme } from './utils/cookieHandling.js';
 
 function Main() {
+    // document.documentElement.classList.toggle("dark", true)
     return( 
         <BrowserRouter>
             <Routes>

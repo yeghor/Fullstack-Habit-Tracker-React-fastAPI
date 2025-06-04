@@ -26,8 +26,6 @@ const HabitCompletions = () => {
     const [ loading, setLoading ] = useState(false)
 
     useEffect(() => {
-        if(darkTheme) { document.documentElement.classList.toggle("dark") };
-
         const fetchAll = async () => {
             try {
                 setLoading(true);
