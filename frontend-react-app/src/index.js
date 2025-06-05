@@ -10,6 +10,7 @@ import UserProfile from './components/userProfile.jsx';
 import InternalServerError from './components/internalServerError.jsx';
 import HabitCompletions from './components/habitCompletions.jsx';
 import ThemeWrapper from './utils/themeWrapper.jsx';
+import NotFound from './components/notFound.jsx';
 
 function Main() {
     return( 
@@ -23,6 +24,8 @@ function Main() {
                 <Route path='/user-profile' element={<ThemeWrapper><UserProfile /></ThemeWrapper>} />
                 <Route path='/to-many-requests' element={<ThemeWrapper><div>Too many requests. PLEASE STOP!</div></ThemeWrapper>} />
                 <Route path='/habit_completions/:id' element={<ThemeWrapper><HabitCompletions /></ThemeWrapper>} />
+
+                <Route path='*' element={<ThemeWrapper><NotFound /></ThemeWrapper>}/>
             </Routes> 
         </BrowserRouter>
     
