@@ -99,7 +99,7 @@ async def habit_completion(
 ) -> None:
     user = get_merged_user(user=user, db=db)
     habit = get_merged_habit(habit=habit, db=db)
-
+    raise HTTPException(status_code=500, detail="YO MISTA WHITE! SERVER IS COOKED")
     if user.user_id != habit.user_id:
         raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
 
