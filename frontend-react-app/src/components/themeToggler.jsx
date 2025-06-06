@@ -10,6 +10,7 @@ const ThemeToggler = () => {
     const handleToggleTheme = () => {
         toggleDarkTheme();
         [ darkTheme, toggleDarkTheme ] = defineColorTheme();
+        document.documentElement.style.backgroundColor = ""
         setDarkThemeState(!darkThemeState);
     };
 
