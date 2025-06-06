@@ -151,7 +151,7 @@ export const Habits = () => {
                                             <div key={index}>
                                             <div
                                                 key={habit.habit_id}
-                                                className="bg-gray-50 dark:bg-slate-900 rounded-2xl shadow p-6 flex flex-col justify-between w-full h-auto transition-transform hover:scale-105 hover:shadow-2xl border border-gray-200 dark:border-slate-600"
+                                                className="bg-gray-50 dark:bg-slate-900 rounded-2xl shadow p-6 flex flex-col justify-between w-full h-auto transition-colors duration-500 hover:scale-105 hover:shadow-2xl border border-gray-200 dark:border-slate-600"
                                             >
                                                 <div>
                                                     <h3 className="text-xl font-bold mb-2 truncate text-gray-900 dark:text-white">{habit.habit_name}</h3>

@@ -130,7 +130,7 @@ const HabitCompletions = () => {
                 {visibleCompletions.map((completion) => (
                     <div
                         key={completion.completion_id}
-                        className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-shadow duration-300 dark:bg-gray-800 dark:border-slate-600"
+                        className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-colors duration-500 dark:bg-gray-800 dark:border-slate-600"
                     >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                             <div className="text-lg font-semibold text-gray-800 dark:text-white">
