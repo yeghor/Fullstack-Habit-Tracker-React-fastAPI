@@ -1,6 +1,11 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, JSON
 from sqlalchemy.orm import relationship
-from database import Base
+from sqlalchemy.orm import DeclarativeBase
+from database import engine
+import asyncio
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Users(Base):
