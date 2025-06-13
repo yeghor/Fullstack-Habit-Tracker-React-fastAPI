@@ -5,6 +5,7 @@ from GeneratingAuthUtils import jwt_token_handling, password_handling
 from uuid import uuid4
 import datetime
 from models import Users, JWTTable
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from jwt.exceptions import PyJWTError, InvalidTokenError
 from depends_utils import (
@@ -102,16 +103,18 @@ async def login(
 
 
     try:
-        potential_user: Users = (
-            db.query(Users)
-            .filter(Users.username == user_data.username)
-            .first()
+        potential_user = await (
+            db.execute(select(Users).where(Users.username == user_data.username))
         )
+        potential_user: Users = potential_user.scalars().first()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Error while working with database")
 
     if not potential_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    print(potential_user)
+    print(potential_user.hashed_password)
 
     if not password_handling.check_password(
         user_data.password, potential_user.hashed_password.encode("utf-8")
@@ -119,11 +122,10 @@ async def login(
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     try:
-        potential_jwt: JWTTable = (
-            db.query(JWTTable)
-            .filter(JWTTable.user_id == potential_user.user_id)
-            .first()
-        )
+        potential_jwt =await (
+            db.execute(select(JWTTable).where(JWTTable.user_id == potential_user.user_id)))
+        potential_jwt: JWTTable = potential_jwt.scalars().first()
+        
         if potential_jwt and potential_jwt.expires_at > timestamp_unix:
             return TokenSchema(
                 token=potential_jwt.jwt_token, expires_at=potential_jwt.expires_at
@@ -137,7 +139,7 @@ async def login(
             user_id=potential_user.user_id, jwt_token=jwt_token, expires_at=expires_at
         )
         db.add(jwt_entry)
-        db.commit()
+        await db.commit()
 
         return TokenSchema(token=jwt_token, expires_at=expires_at)
     except InvalidTokenError:

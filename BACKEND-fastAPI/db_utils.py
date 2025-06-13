@@ -5,12 +5,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 from typing import Generator
 
-def get_db():
+async def get_db():
     db: Session = session_local()
     try:
         yield db
     finally:
-        db.close()
+        await db.close()
 
 # DROPS TABLE! BE CAREFUL!
 def drop_habits() -> None:
