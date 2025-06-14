@@ -19,6 +19,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import random
 from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
 from rate_limiter import limiter
+from sqlalchemy import select, or_
 
 auth_router = APIRouter()
     
@@ -59,8 +60,11 @@ async def register(
         raise HTTPException(status_code=500, detail=f"Error while generating JWT token")
 
     # USERS TABLE LOGIC
-    existing_user: Users = db.query(Users).filter(Users.username == username).first()
-    if existing_user:
+    potential_existing_user: Users = await db.execute(
+        select(Users)
+        .where(or_(Users.username == username, Users.email == email))
+    )
+    if potential_existing_user.all():
         raise HTTPException(
             status_code=409, detail="User with this username is already exists"
         )
@@ -75,7 +79,7 @@ async def register(
             email=email,
         )
         db.add(user)
-        db.commit()
+        await db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Erorr while working with database")
 
@@ -84,7 +88,7 @@ async def register(
             jwt_token=jwt_token, expires_at=expires_at, user_id=user_id_str
         )
         db.add(jwt_to_table)
-        db.commit()
+        await db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Erorr while working with database")
 
@@ -122,10 +126,10 @@ async def login(
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     try:
-        potential_jwt =await (
+        potential_jwt = await (
             db.execute(select(JWTTable).where(JWTTable.user_id == potential_user.user_id)))
         potential_jwt: JWTTable = potential_jwt.scalars().first()
-        
+        print(timestamp_unix)
         if potential_jwt and potential_jwt.expires_at > timestamp_unix:
             return TokenSchema(
                 token=potential_jwt.jwt_token, expires_at=potential_jwt.expires_at
