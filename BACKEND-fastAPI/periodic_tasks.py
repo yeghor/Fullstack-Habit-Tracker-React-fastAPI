@@ -10,8 +10,7 @@ from db_utils import get_completed_habits, get_expired_jwts, get_latest_completi
 async def reset_all_habits() -> None:
     db: AsyncSession = session_local()
     try:
-        habits_raw = await get_completed_habits()
-        habits = habits_raw.scalars.all()
+        habits = await get_completed_habits()
         for habit in habits:
             reset_at = habit.reset_at
             for time, value in reset_at.items():

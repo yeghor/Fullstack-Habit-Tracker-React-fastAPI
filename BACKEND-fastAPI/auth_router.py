@@ -14,7 +14,7 @@ from depends_utils import (
     get_user_depends,
     check_token_expiery_depends,
 )
-from db_utils import get_db, get_merged_user
+from db_utils import get_db, get_merged_user, get_user_by_username_email_optional, delete_existing_token,  add_model_to_database
 from sqlalchemy.exc import SQLAlchemyError
 import random
 from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
@@ -60,26 +60,22 @@ async def register(
         raise HTTPException(status_code=500, detail=f"Error while generating JWT token")
 
     # USERS TABLE LOGIC
-    potential_existing_user: Users = await db.execute(
-        select(Users)
-        .where(or_(Users.username == username, Users.email == email))
-    )
-    if potential_existing_user.all():
+    potential_existing_user = await get_user_by_username_email_optional(db=db, username=username, email=email)
+
+    if potential_existing_user:
         raise HTTPException(
             status_code=409, detail="User with this username is already exists"
         )
 
-
     try:
-        user = Users(
+    
+        await add_model_to_database(db=db, Model=Users,
             user_id=user_id_str,
             username=username,
             hashed_password=password_hash_str,
             joined_at=str(joined_at),
             email=email,
         )
-        db.add(user)
-        await db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Erorr while working with database")
 
@@ -88,7 +84,6 @@ async def register(
             jwt_token=jwt_token, expires_at=expires_at, user_id=user_id_str
         )
         db.add(jwt_to_table)
-        await db.commit()
     except SQLAlchemyError:
         raise HTTPException(status_code=500, detail="Erorr while working with database")
 
@@ -161,18 +156,11 @@ async def loogut(
     token_dict: TokenProvidedSchema = Body(..., example={"token": "Bearer ..."}),
     db: Session = Depends(get_db),
 ) -> None:
-    token = prepare_authorization_token(token=token_dict.token)
+    jwt_token = prepare_authorization_token(token=token_dict.token)
 
-    try:
-        jwt_entry: JWTTable = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+    delete_existing_token(db=db, jwt=jwt_token)
 
-    if not jwt_entry:
-        raise HTTPException(status_code=400, detail="Token doesn't exist")
-
-    db.delete(jwt_entry)
-    db.commit()
+    await db.commit()
 
 
 @auth_router.get("/get_user_profile")
