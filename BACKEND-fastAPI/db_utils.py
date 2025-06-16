@@ -8,8 +8,17 @@ from sqlalchemy import select, delete, or_, and_
 from functools import wraps
 from typing import Optional
 
+
+def get_session() -> AsyncSession:
+    try:
+        return session_local()
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Error with session creation")
+
+
+
 async def get_db():
-    db: AsyncSession = session_local()
+    db = get_session()
     try:
         yield db
         await db.commit()
@@ -29,6 +38,7 @@ async def get_db():
 #         db.close()
 
 
+
 def database_error_handler(action: str):
     def decorator(func):
         @wraps(func)
@@ -42,7 +52,7 @@ def database_error_handler(action: str):
             # except Exception:
             #     raise HTTPException(status_code=500, detail=f"Unkown error occured. Please, try again later. Action - {action}")         
             # except MultipleResultsFound:
-            #     raise HTTPException(status_code=400, detail="Multiply authorization tokens found. Please contact us or try again later.")
+            #     raise HTTPException(status_code=400, detail="Multiply results found where it's not expected. Please contact us and try again later.")
         return wrapper
     return decorator
 
@@ -90,6 +100,13 @@ async def get_token_by_user_id(db: AsyncSession, user_id: str) -> Optional[JWTTa
     )
     return result.scalars().one_or_none()
 
+@database_error_handler(action="Get authorization token by user ID")
+async def get_token_by_match(db: AsyncSession, token: str) -> Optional[JWTTable]:
+    result = await db.execute(
+        select(JWTTable)
+        .where(JWTTable.jwt_token == token)
+    )
+    return result.scalars().one_or_none()
 
 @database_error_handler(action="Get latest habit completion")
 async def get_latest_completion(db: AsyncSession, habit_id: str, UNIX_timestamp: int | float):
@@ -111,13 +128,21 @@ async def get_user_by_username_email_optional(db: AsyncSession, username: str, e
         return result.scalars().first()
     else:
         result = await db.execute(
-        select(Users)
-        .where(Users.username == username)
+            select(Users)
+            .where(Users.username == username)
         )
         return result.scalars().first()
 
+@database_error_handler(action="Get user by id")
+async def get_user_by_id(db: AsyncSession, user_id: str) -> Optional[Users]:
+    result = await db.execute(
+        select(Users)
+        .where(Users.user_id == user_id)
+    )
+    return result.scalars().first()
+
 @database_error_handler(action="Delete existing token")
-async def delete_existing_token(db: AsyncSession, jwt):
+async def delete_existing_token(db: AsyncSession, jwt: str):
     return await db.execute(
         delete(JWTTable)
         .where(JWTTable.jwt_token == jwt)
@@ -127,3 +152,11 @@ async def delete_existing_token(db: AsyncSession, jwt):
 async def construct_and_add_model_to_database(db: AsyncSession, Model: Base, **kwargs):
     model_to_add = Model(**kwargs)
     db.add(model_to_add)
+
+@database_error_handler(action="Get habit by it's id")
+async def get_habit_by_id(db: AsyncSession, habit_id: str):
+    result = await db.execute(
+        select(Habits)
+        .where(Habits.habit_id == habit_id)
+    )
+    return result.scalars().one_or_none()

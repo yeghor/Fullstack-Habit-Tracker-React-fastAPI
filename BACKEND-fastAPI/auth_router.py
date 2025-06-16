@@ -153,9 +153,6 @@ async def loogut(
 
     await delete_existing_token(db=db, jwt=jwt_token)
 
-    await db.commit()
-
-
 @auth_router.get("/get_user_profile")
 @limiter.limit("20/minute")
 async def get_user_profile(
@@ -198,7 +195,7 @@ async def change_username(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ):
-    user = get_merged_user(user=user, db=db)
+    user = await get_merged_user(user=user, db=db)
 
     if user.username == new_username:
         raise HTTPException(status_code=400, detail="New username can't be same as old")
@@ -218,7 +215,7 @@ async def change_password(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ):  
-    user = get_merged_user(user=user, db=db)
+    user = await get_merged_user(user=user, db=db)
     
     if not password_handling.check_password(old_password, user.hashed_password.encode("utf-8")):
         raise HTTPException(status_code=400, detail="Old password didn't match")

@@ -13,13 +13,20 @@ from jwt.exceptions import PyJWTError
 from schemas import TokenProvidedSchema, HabitIdProvidedSchema
 import datetime
 from GeneratingAuthUtils.jwt_token_handling import extract_payload
+from db_utils import (
+    get_token_by_match,
+    get_user_by_id,
+    get_session,
+    get_habit_by_id,
+)
+from sqlalchemy.ext.asyncio import AsyncSession
 
 load_dotenv()
 
 
-def authorize_token(token: str, db: Session) -> None:
+async def authorize_token(token: str, db: Session) -> None:
     try:
-        db_token = db.query(JWTTable).filter(JWTTable.jwt_token == token).first()
+        db_token = await get_token_by_match(db=db, token=token)
         if not db_token:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
     except SQLAlchemyError:
@@ -45,32 +52,27 @@ def verify_credentials(username, email):
         raise HTTPException(status_code=400, detail="Invalid Email")
 
 
-def get_user_depends(token = Header(...)) -> Users:
-    db = session_local()
+async def get_user_depends(token = Header(...)) -> Users:
     try:
+        db = session_local()
         token = prepare_authorization_token(token=token)
-        authorize_token(token=token, db=db)
+        await authorize_token(token=token, db=db)
         try:
             payload = extract_payload(token)
         except PyJWTError:
             raise HTTPException(status_code=400, detail="Invalid token")
-        try:
-            user = db.query(Users).filter(Users.user_id == payload["user_id"]).first()
-            return user
-        except SQLAlchemyError:
-            raise HTTPException(status_code=500, detail="Error while working with database (Depends functions)")
-    finally:
-        db.close()
 
-def get_habit_depends(habit_id: HabitIdProvidedSchema =  Body(...)):
+        user = await get_user_by_id(db=db, user_id=payload["user_id"])
+        if not user:
+            raise HTTPException(status_code=401, detail="User connected to this token does not exists. Please, try again later or contact us")
+        return user
+    finally:
+        await db.close()
+
+async def get_habit_depends(habit_id: HabitIdProvidedSchema =  Body(...)):
     try:
-        try:
-            db: Session = session_local()
-            habit = db.query(Habits).filter(Habits.habit_id == habit_id.habit_id).first()
-        except SQLAlchemyError:
-            raise HTTPException(status_code=500, detail="Error while working with the database")
-        except Exception:
-            raise HTTPException(status_code=500, detail="Uknown error occured")
+        db: AsyncSession = get_session()
+        habit = await get_habit_by_id(db=db, habit_id=habit_id.habit_id)
         
         if not habit:
             raise HTTPException(status_code=400, detail="No habit with such ID")
@@ -79,11 +81,11 @@ def get_habit_depends(habit_id: HabitIdProvidedSchema =  Body(...)):
     finally:
         db.close()
 
-def check_token_expiery_depends(token: TokenProvidedSchema = Header(...)) -> str:
+async def check_token_expiery_depends(token: TokenProvidedSchema = Header(...)) -> str:
     try:
         db: Session = session_local()
         token = prepare_authorization_token(token=token.token)
-        authorize_token(token=token, db=db)
+        await authorize_token(token=token, db=db)
 
         payload = extract_payload(token=token)
         
