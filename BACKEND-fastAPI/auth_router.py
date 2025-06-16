@@ -14,7 +14,14 @@ from depends_utils import (
     get_user_depends,
     check_token_expiery_depends,
 )
-from db_utils import get_db, get_merged_user, get_user_by_username_email_optional, delete_existing_token,  add_model_to_database
+from db_utils import (
+    get_db,
+    get_merged_user,
+    get_user_by_username_email_optional,
+    delete_existing_token,
+    construct_and_add_model_to_database,
+    get_token_by_user_id,
+)
 from sqlalchemy.exc import SQLAlchemyError
 import random
 from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
@@ -37,14 +44,21 @@ async def register(
     db: Session = Depends(get_db),
 ) -> TokenSchema:
     username, password, email = user_data.username, user_data.password, user_data.email
-
     verify_credentials(username=username, email=email)
+
+
+    potential_existing_user = await get_user_by_username_email_optional(db=db, username=username, email=email)
+
+    if potential_existing_user:
+        raise HTTPException(
+            status_code=409, detail="User with this username is already exists"
+        )
 
     joined_at = datetime.datetime.now()
     user_id = uuid4()
     user_id_str = str(user_id)
 
-    # HASHING PASSWORD
+
     try:
         password_hash_bytes = password_handling.hash_password(password)
         password_hash_str = password_hash_bytes.decode("utf-8")
@@ -53,39 +67,29 @@ async def register(
             status_code=500, detail=f"Error while working hashing password"
         )
 
-    # GENERATING JWT TOKEN
     try:
         jwt_token, expires_at = jwt_token_handling.generate_jwt(user_id_str)
     except PyJWTError:
         raise HTTPException(status_code=500, detail=f"Error while generating JWT token")
 
-    # USERS TABLE LOGIC
-    potential_existing_user = await get_user_by_username_email_optional(db=db, username=username, email=email)
 
-    if potential_existing_user:
-        raise HTTPException(
-            status_code=409, detail="User with this username is already exists"
-        )
 
-    try:
-    
-        await add_model_to_database(db=db, Model=Users,
-            user_id=user_id_str,
-            username=username,
-            hashed_password=password_hash_str,
-            joined_at=str(joined_at),
-            email=email,
-        )
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+    await construct_and_add_model_to_database(db=db, Model=Users,
+        user_id=user_id_str,
+        username=username,
+        hashed_password=password_hash_str,
+        joined_at=str(joined_at),
+        email=email,
+    )
 
-    try:
-        jwt_to_table = JWTTable(
-            jwt_token=jwt_token, expires_at=expires_at, user_id=user_id_str
-        )
-        db.add(jwt_to_table)
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erorr while working with database")
+
+    await construct_and_add_model_to_database(
+        db=db,
+        Model=JWTTable,
+        user_id=user_id,
+        jwt_token=jwt_token,
+        expires_at=expires_at
+    )
 
     return TokenSchema(token=jwt_token, expires_at=expires_at)
 
@@ -101,30 +105,19 @@ async def login(
     timestamp_unix = round(timestamp.timestamp())
 
 
-    try:
-        potential_user = await (
-            db.execute(select(Users).where(Users.username == user_data.username))
-        )
-        potential_user: Users = potential_user.scalars().first()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Error while working with database")
+    potential_user = await get_user_by_username_email_optional(db=db, username=user_data.username)
+
 
     if not potential_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    print(potential_user)
-    print(potential_user.hashed_password)
-
-    if not password_handling.check_password(
+    elif not password_handling.check_password(
         user_data.password, potential_user.hashed_password.encode("utf-8")
     ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     try:
-        potential_jwt = await (
-            db.execute(select(JWTTable).where(JWTTable.user_id == potential_user.user_id)))
-        potential_jwt: JWTTable = potential_jwt.scalars().first()
-        print(timestamp_unix)
+        potential_jwt = await get_token_by_user_id(db=db, user_id=potential_user.user_id)
+
         if potential_jwt and potential_jwt.expires_at > timestamp_unix:
             return TokenSchema(
                 token=potential_jwt.jwt_token, expires_at=potential_jwt.expires_at
@@ -134,20 +127,20 @@ async def login(
             user_id=potential_user.user_id
         )
 
-        jwt_entry = JWTTable(
-            user_id=potential_user.user_id, jwt_token=jwt_token, expires_at=expires_at
-        )
-        db.add(jwt_entry)
-        await db.commit()
-
-        return TokenSchema(token=jwt_token, expires_at=expires_at)
     except InvalidTokenError:
         raise HTTPException(status_code=400, detail="Invalid token")
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Error while working with database")
     except Exception:
-        raise HTTPException(status_code=500, detail="Error while generating/extracting jwt token")
+        raise HTTPException(status_code=500, detail="Error while generating/extracting authorization token")
+    
+    await construct_and_add_model_to_database(
+        db=db,
+        Model=JWTTable,
+        user_id=potential_user.user_id,
+        jwt_token=jwt_token,
+        expires_at=expires_at
+    )
 
+    return TokenSchema(token=jwt_token, expires_at=expires_at)
 
 @auth_router.post("/logout")
 @limiter.limit("20/minute")
@@ -158,7 +151,7 @@ async def loogut(
 ) -> None:
     jwt_token = prepare_authorization_token(token=token_dict.token)
 
-    delete_existing_token(db=db, jwt=jwt_token)
+    await delete_existing_token(db=db, jwt=jwt_token)
 
     await db.commit()
 

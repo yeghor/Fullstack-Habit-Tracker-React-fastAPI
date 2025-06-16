@@ -1,7 +1,7 @@
 from database import session_local, engine
 from sqlalchemy.ext.asyncio import AsyncSession
 from models import Users, HabitCompletions, Habits, JWTTable, Base
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, MultipleResultsFound
 from fastapi import HTTPException
 from typing import Generator
 from sqlalchemy import select, delete, or_, and_
@@ -12,10 +12,10 @@ async def get_db():
     db: AsyncSession = session_local()
     try:
         yield db
+        await db.commit()
     except Exception:
         await db.rollback()
     finally:
-        await db.commit()
         await db.close()
 
 
@@ -40,7 +40,9 @@ def database_error_handler(action: str):
             # except SQLAlchemyError:
             #     raise HTTPException(status_code=500, detail=f"Error while working with database. Action - {action}")
             # except Exception:
-            #   raise HTTPException(status_code=500, detail=f"Unkown error occured. Please, try again later. Action - {action}")         
+            #     raise HTTPException(status_code=500, detail=f"Unkown error occured. Please, try again later. Action - {action}")         
+            # except MultipleResultsFound:
+            #     raise HTTPException(status_code=400, detail="Multiply authorization tokens found. Please contact us or try again later.")
         return wrapper
     return decorator
 
@@ -80,6 +82,14 @@ async def delete_expired_jwts(db: AsyncSession, UNIX_timestamp: int | float) -> 
         .where(JWTTable.expires_at < int(UNIX_timestamp))
     ) 
     
+@database_error_handler(action="Get authorization token by user ID")
+async def get_token_by_user_id(db: AsyncSession, user_id: str) -> Optional[JWTTable]:
+    result = await db.execute(
+        select(JWTTable)
+        .where(JWTTable.user_id == user_id)
+    )
+    return result.scalars().one_or_none()
+
 
 @database_error_handler(action="Get latest habit completion")
 async def get_latest_completion(db: AsyncSession, habit_id: str, UNIX_timestamp: int | float):
@@ -91,8 +101,8 @@ async def get_latest_completion(db: AsyncSession, habit_id: str, UNIX_timestamp:
     return result.scalars().first()
 
 
-@database_error_handler(action="Getting user by username and email")
-async def get_user_by_username_email_optional(db: AsyncSession, username: str, email: Optional[str]):
+@database_error_handler(action="Get user by username and email")
+async def get_user_by_username_email_optional(db: AsyncSession, username: str, email: Optional[str] = None) -> Optional[Users]:
     if email:
         result = await db.execute(
             select(Users)
@@ -102,7 +112,7 @@ async def get_user_by_username_email_optional(db: AsyncSession, username: str, e
     else:
         result = await db.execute(
         select(Users)
-        .where(or_(Users.username == username))
+        .where(Users.username == username)
         )
         return result.scalars().first()
 
@@ -114,6 +124,6 @@ async def delete_existing_token(db: AsyncSession, jwt):
     )
 
 @database_error_handler(action="Adding new model to the database")
-async def add_model_to_database(db: AsyncSession, Model: Base, **kwargs):
+async def construct_and_add_model_to_database(db: AsyncSession, Model: Base, **kwargs):
     model_to_add = Model(**kwargs)
     db.add(model_to_add)
