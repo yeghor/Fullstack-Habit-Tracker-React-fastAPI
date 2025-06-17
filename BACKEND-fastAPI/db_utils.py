@@ -20,8 +20,6 @@ async def get_db():
     try:
         yield db
         await db.commit()
-    except Exception:
-        await db.rollback()
     finally:
         await db.close()
 
@@ -30,16 +28,16 @@ def database_error_handler(action: str):
     def decorator(func):
         @wraps(func)
         async def wrapper(db: AsyncSession, *args, **kwargs):
-            try:
-                result = await func(db, *args, **kwargs)
-                await db.flush()
-                return result
-            except SQLAlchemyError:
-                raise HTTPException(status_code=500, detail=f"Error while working with database. Action - {action}")
-            except Exception:
-                raise HTTPException(status_code=500, detail=f"Unkown error occured. Please, try again later. Action - {action}")         
-            except MultipleResultsFound:
-                raise HTTPException(status_code=400, detail="Multiply results found where it's not expected. Please contact us and try again later.")
+            # try:
+            result = await func(db, *args, **kwargs)
+            await db.flush()
+            return result
+            # except SQLAlchemyError:
+            #     raise HTTPException(status_code=500, detail=f"Error while working with database. Action - {action}")
+            # except Exception:
+            #     raise HTTPException(status_code=500, detail=f"Unkown error occured. Please, try again later. Action - {action}")         
+            # except MultipleResultsFound:
+            #     raise HTTPException(status_code=400, detail="Multiply results found where it's not expected. Please contact us and try again later.")
         return wrapper
     return decorator
 

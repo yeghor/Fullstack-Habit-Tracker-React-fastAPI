@@ -53,25 +53,27 @@ def verify_credentials(username, email):
 
 
 async def get_user_depends(token = Header(...)) -> Users:
+    db = get_session()
     try:
-        db = get_session()
         token = prepare_authorization_token(token=token)
         await authorize_token(token=token, db=db)
         try:
             payload = extract_payload(token)
         except PyJWTError:
             raise HTTPException(status_code=400, detail="Invalid token")
+
+
+        user = await get_user_by_id(db=db, user_id=payload["user_id"])
+        if not user:
+            raise HTTPException(status_code=401, detail="User connected to this token does not exists. Please, try again later or contact us")
+    
+        return user
     finally:
         await db.close()
 
-    user = await get_user_by_id(db=db, user_id=payload["user_id"])
-    if not user:
-        raise HTTPException(status_code=401, detail="User connected to this token does not exists. Please, try again later or contact us")
-    return user
-
 async def get_habit_depends(habit_id: HabitIdProvidedSchema =  Body(...)):
+    db: AsyncSession = get_session()
     try:
-        db: AsyncSession = get_session()
         habit = await get_habit_by_id(db=db, habit_id=habit_id.habit_id)
         
         if not habit:

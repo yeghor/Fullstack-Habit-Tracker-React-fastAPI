@@ -82,11 +82,10 @@ async def register(
         email=email,
     )
 
-
     await construct_and_add_model_to_database(
         db=db,
         Model=JWTTable,
-        user_id=user_id,
+        user_id=user_id_str,
         jwt_token=jwt_token,
         expires_at=expires_at
     )
