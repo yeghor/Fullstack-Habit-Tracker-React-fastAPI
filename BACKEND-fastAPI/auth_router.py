@@ -160,7 +160,7 @@ async def get_user_profile(
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db)
 ) -> UserSchema:
-    user = get_merged_user(user=user, db=db)
+    user = await get_merged_user(user=user, db=db)
 
     level, next_level_xp_remaining = get_level_by_xp(user.xp)
     user.level = level

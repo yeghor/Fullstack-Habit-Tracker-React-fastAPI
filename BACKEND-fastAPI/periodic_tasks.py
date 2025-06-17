@@ -33,8 +33,7 @@ def get_seconds_from_midnight() -> int:
 async def reset_potential_habit() -> None:
     db: AsyncSession = session_local()
     try:
-        habits_raw = await get_completed_habits(db=db)
-        habits = habits_raw.scalars().all()
+        habits = await get_completed_habits(db=db)
         from_midnight_unix = get_seconds_from_midnight()
         if not habits:
             return
