@@ -5,4 +5,4 @@ __pychache__/
 .vscode/
 db.sqlite3
 *.db
-
+pyvenv.cfg
