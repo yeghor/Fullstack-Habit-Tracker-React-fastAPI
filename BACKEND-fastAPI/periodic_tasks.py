@@ -5,7 +5,13 @@ import datetime
 from datetime import time
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select
-from db_utils import get_completed_habits, get_expired_jwts, get_latest_completion, delete_expired_jwts
+from db_utils import (
+    get_completed_habits,
+    get_expired_jwts,
+    get_latest_completion,
+    delete_expired_jwts,
+    commit
+    )
 
 async def reset_all_habits() -> None:
     db: AsyncSession = session_local()
@@ -17,7 +23,7 @@ async def reset_all_habits() -> None:
                 reset_at[time] = False
             habit.reset_at = reset_at
             habit.completed = False
-        await db.commit()
+        await commit(db)
     finally:
         await db.close()
 
@@ -39,8 +45,7 @@ async def reset_potential_habit() -> None:
             return
 
         for habit in habits:
-            latest_completion_raw = await get_latest_completion(db=db, habit_id=habit.habit_id)
-            latest_completion = latest_completion_raw.first()
+            latest_completion = await get_latest_completion(db=db, habit_id=habit.habit_id)
 
             if not latest_completion:
                 continue
@@ -63,7 +68,7 @@ async def reset_potential_habit() -> None:
     except SQLAlchemyError:
         raise SQLAlchemyError("Error while working with db")
     finally:
-        await db.commit()
+        await commit(db)
         await db.close()
 
 def to_seconds_from_midnight(UNIX_time) -> int:
@@ -78,6 +83,6 @@ async def update_jwts():
         timestamp = datetime.datetime.now()
         timestamp_unix = round(timestamp.timestamp())
         await delete_expired_jwts(db=db, UNIX_timestamp=timestamp_unix)
-        await db.commit()
+        await commit(db)
     finally:
         await db.close()

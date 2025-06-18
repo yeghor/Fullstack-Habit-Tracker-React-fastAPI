@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Annotated
 from fastapi import Body, Header
 from uuid import UUID
+from models import Users, Habits
+from sqlalchemy.orm import DeclarativeBase
 
 class HabitSchema(BaseModel):
     habit_id: str
@@ -16,7 +18,8 @@ class HabitCompletionSchema(BaseModel):
     completion_id: str
     habit_id: str
     habit_name: str
-    completed_at: str
+    completed_at: int
+    xp_given: int
 
 
 class UserSchema(BaseModel):

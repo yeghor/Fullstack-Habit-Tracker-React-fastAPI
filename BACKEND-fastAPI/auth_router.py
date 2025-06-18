@@ -15,6 +15,7 @@ from depends_utils import (
     check_token_expiery_depends,
 )
 from db_utils import (
+    commit,
     get_db,
     get_merged_user,
     get_user_by_username_email_optional,
@@ -30,6 +31,8 @@ from sqlalchemy import select, or_
 
 auth_router = APIRouter()
     
+# Manualy call await AsyncSession.commit()!
+
 @auth_router.get("/")
 @limiter.limit("20/minute")
 async def test(request: Request) -> str:
@@ -74,7 +77,7 @@ async def register(
 
 
 
-    await construct_and_add_model_to_database(db=db, Model=Users,
+    construct_and_add_model_to_database(db=db, Model=Users,
         user_id=user_id_str,
         username=username,
         hashed_password=password_hash_str,
@@ -82,14 +85,14 @@ async def register(
         email=email,
     )
 
-    await construct_and_add_model_to_database(
+    construct_and_add_model_to_database(
         db=db,
         Model=JWTTable,
         user_id=user_id_str,
         jwt_token=jwt_token,
         expires_at=expires_at
     )
-
+    await commit(db)
     return TokenSchema(token=jwt_token, expires_at=expires_at)
 
 
@@ -131,7 +134,7 @@ async def login(
     except Exception:
         raise HTTPException(status_code=500, detail="Error while generating/extracting authorization token")
     
-    await construct_and_add_model_to_database(
+    construct_and_add_model_to_database(
         db=db,
         Model=JWTTable,
         user_id=potential_user.user_id,
@@ -139,6 +142,7 @@ async def login(
         expires_at=expires_at
     )
 
+    await commit(db)
     return TokenSchema(token=jwt_token, expires_at=expires_at)
 
 @auth_router.post("/logout")
@@ -151,6 +155,9 @@ async def loogut(
     jwt_token = prepare_authorization_token(token=token_dict.token)
 
     await delete_existing_token(db=db, jwt=jwt_token)
+
+    await commit(db)
+
 
 @auth_router.get("/get_user_profile")
 @limiter.limit("20/minute")
@@ -184,6 +191,7 @@ async def get_user_profile(
         "user_xp_total": user_xp_total,
     }
 
+    await commit(db)
     return UserSchema(**user_mapping)
 
 @auth_router.post("/change_username")
@@ -199,11 +207,10 @@ async def change_username(
     if user.username == new_username:
         raise HTTPException(status_code=400, detail="New username can't be same as old")
     
-    try:
-        user.username = new_username
-        db.commit()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Error while working with database")
+
+    user.username = new_username
+    await commit(db)
+
 
 @auth_router.post("/change_password")
 @limiter.limit("20/minute")
@@ -217,7 +224,7 @@ async def change_password(
     user = await get_merged_user(user=user, db=db)
     
     if not password_handling.check_password(old_password, user.hashed_password.encode("utf-8")):
-        raise HTTPException(status_code=400, detail="Old password didn't match")
+        raise HTTPException(status_code=400, detail="Old password didn't match!")
 
     if password_handling.check_password(new_password, user.hashed_password.encode("utf-8")):
         raise HTTPException(status_code=400, detail="New password can't be same as current!")
@@ -227,12 +234,10 @@ async def change_password(
     except Exception:
         raise HTTPException(status_code=500, detail="Error while hashing password")
 
-    try:
-        user.hashed_password = hashed_new_password.decode("utf-8")
-        db.commit()
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Error while working with database")
-    
+    user.hashed_password = hashed_new_password.decode("utf-8")
+    await commit(db)
+
+
 @auth_router.get("/check_token")
 @limiter.limit("20/minute")
 async def check_token(

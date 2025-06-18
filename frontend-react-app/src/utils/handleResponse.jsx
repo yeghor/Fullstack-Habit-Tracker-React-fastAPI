@@ -12,7 +12,8 @@ export const handleResponseError = (response, responseJSON, navigate, setToken, 
             setErrorMessage("The server was unable to process the request because it contains invalid data.");
             return true;
         } else if (response.status === 429) {
-            navigate("/internal-server-error", { state: {errorMessage: "Too many requests. Please, make a pause. And try again later" } });
+            // navigate("/internal-server-error", { state: {errorMessage: "Too many requests. Please, make a pause. And try again later" } });
+            alert("Too many requests! Make a pause and try again later.")
             return true;
         } else if(response.status == 400) {
             if(!setErrorMessage) { // setting error message only if response statuc code 400 - bad request. To inform user about incorrect data input.

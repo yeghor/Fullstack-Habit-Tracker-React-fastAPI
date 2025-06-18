@@ -7,37 +7,48 @@ from typing import Generator
 from sqlalchemy import select, delete, or_, and_
 from functools import wraps
 from typing import Optional
-
+from sqlalchemy.orm import DeclarativeBase
 
 def get_session() -> AsyncSession:
     try:
         return session_local()
     except SQLAlchemyError:
+
         raise HTTPException(status_code=500, detail="Error with session creation")
         
 async def get_db():
     db: AsyncSession = get_session()
     try:
         yield db
-        await db.commit()
     finally:
         await db.close()
+
+async def commit(db: AsyncSession) -> None:
+    try:
+        await db.commit()
+    except Exception as e:
+        if isinstance(e, SQLAlchemyError):
+            raise HTTPException(status_code=500, detail=f"DB Error while trying to commit changed to the database. Exception - {e}")
+        else:
+            raise HTTPException(status_code=500, detail=f"Uknown error occured. (Commit to the database). Exception - {e}")
 
 
 def database_error_handler(action: str):
     def decorator(func):
         @wraps(func)
         async def wrapper(db: AsyncSession, *args, **kwargs):
-            # try:
-            result = await func(db, *args, **kwargs)
-            await db.flush()
-            return result
-            # except SQLAlchemyError:
-            #     raise HTTPException(status_code=500, detail=f"Error while working with database. Action - {action}")
-            # except Exception:
-            #     raise HTTPException(status_code=500, detail=f"Unkown error occured. Please, try again later. Action - {action}")         
-            # except MultipleResultsFound:
-            #     raise HTTPException(status_code=400, detail="Multiply results found where it's not expected. Please contact us and try again later.")
+            try:
+                result = await func(db, *args, **kwargs)
+                await db.flush()
+                return result
+            except Exception as e:
+                await db.rollback()
+                if isinstance(e, MultipleResultsFound):
+                    raise HTTPException(status_code=500, detail=f"Multiply results found where it's not expected. Please contact us and try again later. Action - {action}")
+                elif isinstance(e, SQLAlchemyError):
+                    raise HTTPException(status_code=500, detail=f"Error while working with database. Action - {action}")     
+                else:
+                    raise HTTPException(status_code=500, detail=f"Unkown error occured. Please, try again later. Action - {action}")             
         return wrapper
     return decorator
 
@@ -94,7 +105,7 @@ async def get_token_by_match(db: AsyncSession, token: str) -> Optional[JWTTable]
     return result.scalars().one_or_none()
 
 @database_error_handler(action="Get latest habit completion")
-async def get_latest_completion(db: AsyncSession, habit_id: str, UNIX_timestamp: int | float):
+async def get_latest_completion(db: AsyncSession, habit_id: str):
     result = await db.execute(
         select(HabitCompletions)
         .where(HabitCompletions.habit_id == habit_id)
@@ -133,10 +144,11 @@ async def delete_existing_token(db: AsyncSession, jwt: str):
         .where(JWTTable.jwt_token == jwt)
     )
 
-@database_error_handler(action="Adding new model to the database")
-async def construct_and_add_model_to_database(db: AsyncSession, Model: Base, **kwargs):
+# Don't use async error handler decorator. Decause AsyncSession.add() is syn method
+def construct_and_add_model_to_database(db: AsyncSession, Model: DeclarativeBase, **kwargs) -> DeclarativeBase:
     model_to_add = Model(**kwargs)
     db.add(model_to_add)
+    return model_to_add
 
 @database_error_handler(action="Get habit by it's id")
 async def get_habit_by_id(db: AsyncSession, habit_id: str):
@@ -145,3 +157,17 @@ async def get_habit_by_id(db: AsyncSession, habit_id: str):
         .where(Habits.habit_id == habit_id)
     )
     return result.scalars().one_or_none()
+
+@database_error_handler(action="Delete habit completion by it's id")
+async def delete_completion_by_id(db: AsyncSession, completion_id: str):
+    await db.execute(
+        delete(HabitCompletions)
+        .where(HabitCompletions.completion_id == completion_id)
+    )
+
+@database_error_handler(action="Delete habit by it's id")
+async def delete_habit_by_id(db: AsyncSession, habit_id: str):
+    await db.execute(
+        delete(Habits)
+        .where(Habits.habit_id == habit_id)
+    )
