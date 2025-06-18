@@ -15,19 +15,21 @@ import hashlib
 from rate_limiter import limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi import Limiter, _rate_limit_exceeded_handler
+import asyncio
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 load_dotenv()
 
-def periodic_task():
-    update_jwts()
-    reset_potential_habit()
+async def periodic_task():
+    await update_jwts()
+    await reset_potential_habit()
 
 
-def periodic_habit_resetting():
-    reset_all_habits()
+async def periodic_habit_resetting():
+    await reset_all_habits()
 
 
-scheduler_interval = BackgroundScheduler()
+scheduler_interval = AsyncIOScheduler()
 scheduler_interval.add_job(
     periodic_task, "interval", seconds=int(os.getenv("PERIODIC_TASK_INTERVAL_SECONDS"))
 )
@@ -49,7 +51,10 @@ app.include_router(auth_router)
 app.include_router(habit_router)
 app.include_router(utils_router)
 
-Base.metadata.create_all(bind=engine)
+@app.on_event("startup")
+async def startup_init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 app.add_middleware(
     CORSMiddleware,
