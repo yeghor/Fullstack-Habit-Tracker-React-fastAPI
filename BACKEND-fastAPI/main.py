@@ -20,6 +20,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 load_dotenv()
 
+
 async def periodic_task():
     await update_jwts()
     await reset_potential_habit()
@@ -39,7 +40,7 @@ scheduler_interval.add_job(
     hour=int(os.getenv("HABIT_RESETTING_HOURS")),
     minute=0,
 )
-    
+
 scheduler_interval.start()
 
 app = FastAPI()
@@ -51,6 +52,7 @@ app.include_router(auth_router)
 app.include_router(habit_router)
 app.include_router(utils_router)
 
+
 @app.on_event("startup")
 async def startup_init_models():
     async with engine.begin() as conn:
@@ -60,11 +62,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "127.0.0.1:3000"],
     allow_credentials=True,
-    allow_methods=["*"], 
-    allow_headers=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # temporary
+
+
 def clear_tables():
     Users.__table__.drop(engine)
     JWTTable.__table__.drop(engine)

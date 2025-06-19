@@ -9,10 +9,12 @@ load_dotenv()
 
 JWT_SECRET_KEY_TEMP = os.getenv("JWT_SECRET_KEY_TEMP")
 
+
 def generate_jwt(user_id):
     user_id = str(user_id)
     datestamp = datetime.now()
-    expiry_date = datestamp + timedelta(minutes=int(os.getenv("EXPIERY_TIME_MINUTES")))
+    expiry_date = datestamp + \
+        timedelta(minutes=int(os.getenv("EXPIERY_TIME_MINUTES")))
 
     expiry_date_unix = round(expiry_date.timestamp())
     payload = {
@@ -30,7 +32,8 @@ def extract_payload(token) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET_KEY_TEMP, algorithms=["HS256"])
     except PyJWTError:
-        raise HTTPException(status_code=400, detail="Invalid authorization token")
+        raise HTTPException(
+            status_code=400, detail="Invalid authorization token")
 
 
 def check_token_expiery(token) -> bool:

@@ -30,13 +30,14 @@ from rate_limiter import limiter
 from sqlalchemy import select, or_
 
 auth_router = APIRouter()
-    
+
 # Manualy call await AsyncSession.commit()!
+
 
 @auth_router.get("/")
 @limiter.limit("20/minute")
 async def test(request: Request) -> str:
-    return "Hello World: " + str(random.randint(1, 100)) 
+    return "Hello World: " + str(random.randint(1, 100))
 
 
 @auth_router.post("/register")
@@ -49,7 +50,6 @@ async def register(
     username, password, email = user_data.username, user_data.password, user_data.email
     verify_credentials(username=username, email=email)
 
-
     potential_existing_user = await get_user_by_username_email_optional(db=db, username=username, email=email)
 
     if potential_existing_user:
@@ -60,7 +60,6 @@ async def register(
     joined_at = datetime.datetime.now()
     user_id = uuid4()
     user_id_str = str(user_id)
-
 
     try:
         password_hash_bytes = password_handling.hash_password(password)
@@ -73,9 +72,8 @@ async def register(
     try:
         jwt_token, expires_at = jwt_token_handling.generate_jwt(user_id_str)
     except PyJWTError:
-        raise HTTPException(status_code=500, detail=f"Error while generating JWT token")
-
-
+        raise HTTPException(
+            status_code=500, detail=f"Error while generating JWT token")
 
     construct_and_add_model_to_database(db=db, Model=Users,
         user_id=user_id_str,
@@ -83,7 +81,7 @@ async def register(
         hashed_password=password_hash_str,
         joined_at=str(joined_at),
         email=email,
-    )
+        )
 
     construct_and_add_model_to_database(
         db=db,
@@ -106,9 +104,7 @@ async def login(
     timestamp = datetime.datetime.now()
     timestamp_unix = round(timestamp.timestamp())
 
-
     potential_user = await get_user_by_username_email_optional(db=db, username=user_data.username)
-
 
     if not potential_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -132,8 +128,9 @@ async def login(
     except InvalidTokenError:
         raise HTTPException(status_code=400, detail="Invalid token")
     except Exception:
-        raise HTTPException(status_code=500, detail="Error while generating/extracting authorization token")
-    
+        raise HTTPException(
+            status_code=500, detail="Error while generating/extracting authorization token")
+
     construct_and_add_model_to_database(
         db=db,
         Model=JWTTable,
@@ -145,11 +142,13 @@ async def login(
     await commit(db)
     return TokenSchema(token=jwt_token, expires_at=expires_at)
 
+
 @auth_router.post("/logout")
 @limiter.limit("20/minute")
 async def loogut(
     request: Request,
-    token_dict: TokenProvidedSchema = Body(..., example={"token": "Bearer ..."}),
+    token_dict: TokenProvidedSchema = Body(..., example={
+                                           "token": "Bearer ..."}),
     db: Session = Depends(get_db),
 ) -> None:
     jwt_token = prepare_authorization_token(token=token_dict.token)
@@ -194,6 +193,7 @@ async def get_user_profile(
     await commit(db)
     return UserSchema(**user_mapping)
 
+
 @auth_router.post("/change_username")
 @limiter.limit("20/minute")
 async def change_username(
@@ -205,8 +205,8 @@ async def change_username(
     user = await get_merged_user(user=user, db=db)
 
     if user.username == new_username:
-        raise HTTPException(status_code=400, detail="New username can't be same as old")
-    
+        raise HTTPException(
+            status_code=400, detail="New username can't be same as old")
 
     user.username = new_username
     await commit(db)
@@ -220,19 +220,23 @@ async def change_password(
     new_password: Annotated[str, Body(title="New secure password", min_length=8, max_length=30)],
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
-):  
+):
     user = await get_merged_user(user=user, db=db)
-    
+
     if not password_handling.check_password(old_password, user.hashed_password.encode("utf-8")):
-        raise HTTPException(status_code=400, detail="Old password didn't match!")
+        raise HTTPException(
+            status_code=400, detail="Old password didn't match!")
 
     if password_handling.check_password(new_password, user.hashed_password.encode("utf-8")):
-        raise HTTPException(status_code=400, detail="New password can't be same as current!")
+        raise HTTPException(
+            status_code=400, detail="New password can't be same as current!")
 
     try:
-        hashed_new_password: bytes = password_handling.hash_password(raw_password=new_password)
+        hashed_new_password: bytes = password_handling.hash_password(
+            raw_password=new_password)
     except Exception:
-        raise HTTPException(status_code=500, detail="Error while hashing password")
+        raise HTTPException(
+            status_code=500, detail="Error while hashing password")
 
     user.hashed_password = hashed_new_password.decode("utf-8")
     await commit(db)
@@ -242,6 +246,6 @@ async def change_password(
 @limiter.limit("20/minute")
 async def check_token(
     request: Request,
-    expires_at = Depends(check_token_expiery_depends)
+    expires_at=Depends(check_token_expiery_depends)
 ):
     return expires_at

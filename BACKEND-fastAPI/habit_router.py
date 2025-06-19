@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Body, Header, Depends, APIRouter, Request
 from typing import Annotated, Dict, List
-from schemas import TokenSchema, AddHabitSchema, HabitIdProvidedSchema  
+from schemas import TokenSchema, AddHabitSchema, HabitIdProvidedSchema
 from uuid import uuid4
 import datetime
 from models import Users, JWTTable, Habits, HabitCompletions
@@ -43,6 +43,8 @@ MAX_HABITS = int(os.getenv("MAX_HABITS"))
 
 # Manualy call await AsyncSession.commit()!
 # Providing Request object to every root because slowAPI requires it.
+
+
 @habit_router.post("/add_habit")
 @limiter.limit("20/minute")
 async def add_habit(
@@ -54,10 +56,12 @@ async def add_habit(
     user = await get_merged_user(user=user, db=db)
 
     if len(user.habits) + 1 > MAX_HABITS:
-        raise HTTPException(status_code=400, detail="You can't add more habits. Each user can have up to 10 habits.")
+        raise HTTPException(
+            status_code=400, detail="You can't add more habits. Each user can have up to 10 habits.")
 
     if not validate_string(habit.habit_name) or not validate_string(habit.habit_desc):
-        raise HTTPException(status_code=400, detail="Invalid habit name or description")
+        raise HTTPException(
+            status_code=400, detail="Invalid habit name or description")
     if not validate_reset_time(habit.reset_at):
         raise HTTPException(status_code=400, detail="Invalid resetting time")
 
@@ -67,7 +71,8 @@ async def add_habit(
 
     habit_id = str(uuid4())
 
-    new_habit = construct_and_add_model_to_database(db=db, Model=Habits,
+    construct_and_add_model_to_database(
+        db=db, Model=Habits,
         habit_id=habit_id,
         habit_name=habit.habit_name,
         habit_desc=habit.habit_desc,
@@ -103,19 +108,23 @@ async def habit_completion(
     habit = await get_merged_habit(habit=habit, db=db)
 
     if user.user_id != habit.user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
+        raise HTTPException(
+            status_code=401, detail="Unauthorized. You're not owner of this habit")
 
     if habit.completed:
-        raise HTTPException(status_code=409, detail="This habit is already completed. Wait until it's resetting time",)
-    
-    xp_for_completion = int(XP_AFTER_COMPLETION * random.randrange(1, XP_RANDOM_FACTOR + 1))
+        raise HTTPException(
+            status_code=409, detail="This habit is already completed. Wait until it's resetting time",)
+
+    xp_for_completion = int(XP_AFTER_COMPLETION *
+                            random.randrange(1, XP_RANDOM_FACTOR + 1))
 
     construct_and_add_model_to_database(db=db, Model=HabitCompletions,
         completion_id=str(uuid4()),
         habit_id=habit.habit_id,
         habit_name=habit.habit_name,
         user_id=user.user_id,
-        completed_at=int(datetime.datetime.today().timestamp()),
+        completed_at=int(
+            datetime.datetime.today().timestamp()),
         xp_given=xp_for_completion,
         owner=user,
         habit=habit,
@@ -131,7 +140,7 @@ async def habit_completion(
     user.xp += xp_for_completion
 
     habit.completed = True
-    
+
     await commit(db)
 
 
@@ -147,18 +156,21 @@ async def uncomplete_habit(
     habit = await get_merged_habit(habit=habit, db=db)
 
     if user.user_id != habit.user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
+        raise HTTPException(
+            status_code=401, detail="Unauthorized. You're not owner of this habit")
 
     habit_completion = await get_latest_completion(db=db, habit_id=habit.habit_id)
 
     if not habit_completion:
-        raise HTTPException(status_code=400, detail="No habit completion entries were made")
+        raise HTTPException(
+            status_code=400, detail="No habit completion entries were made")
 
     if not habit.completed:
-        raise HTTPException(status_code=400, detail="This habit is not completed, make a completion to be able to uncomplete habit")
-      
+        raise HTTPException(
+            status_code=400, detail="This habit is not completed, make a completion to be able to uncomplete habit")
+
     await delete_completion_by_id(db=db, completion_id=habit_completion.completion_id)
-    
+
     habit.completed = False
 
     user.xp -= int(habit_completion.xp_given)
@@ -166,13 +178,13 @@ async def uncomplete_habit(
     user.level = level
 
     await commit(db)
-        
+
 
 @habit_router.post("/delete_habit")
 @limiter.limit("20/minute")
 async def delete_habit(
     request: Request,
-    habit = Depends(get_habit_depends),
+    habit=Depends(get_habit_depends),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> None:
@@ -180,10 +192,11 @@ async def delete_habit(
     habit = await get_merged_habit(habit=habit, db=db)
 
     if habit.user_id != user.user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
+        raise HTTPException(
+            status_code=401, detail="Unauthorized. You're not owner of this habit")
 
     await delete_habit_by_id(db=db, habit_id=habit.habit_id)
-    
+
     await commit(db)
 
 
@@ -191,7 +204,7 @@ async def delete_habit(
 @limiter.limit("20/minute")
 async def get_completions(
     request: Request,
-    habit = Depends(get_habit_depends),
+    habit=Depends(get_habit_depends),
     user: Users = Depends(get_user_depends),
     db: Session = Depends(get_db),
 ) -> List[HabitCompletionSchema]:
@@ -199,8 +212,10 @@ async def get_completions(
     habit = await get_merged_habit(habit=habit, db=db)
 
     if habit.user_id != user.user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized. You're not owner of this habit")
+        raise HTTPException(
+            status_code=401, detail="Unauthorized. You're not owner of this habit")
     return habit.completions
+
 
 @habit_router.get("/get_all_completions")
 @limiter.limit("20/minute")

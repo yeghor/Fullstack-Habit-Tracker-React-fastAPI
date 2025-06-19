@@ -9,6 +9,7 @@ from rate_limiter import limiter
 
 utils_router = APIRouter()
 
+
 @utils_router.get("/get_UNIX_from_midnight")
 @limiter.limit("200/minute")
 async def get_UNIX_from_midnight(

@@ -3,17 +3,21 @@ from fastapi.testclient import TestClient
 import pytest
 from database import engine, Base
 
+
 @pytest.fixture(autouse=True)
 def clear_database():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
+
 client = TestClient(app)
+
 
 def test_main():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == "Hello World"
+
 
 def test_authorization():
     new_user_dict = {
@@ -28,12 +32,12 @@ def test_authorization():
 
     token = response_dict["token"]
     token = "Bearer " + token
-    response_profile = client.get("/get_user_profile", headers={"token": token})
+    response_profile = client.get(
+        "/get_user_profile", headers={"token": token})
     assert response_profile.status_code == 200
     user_profile = response_profile.json()
     assert new_user_dict["username"] == user_profile["username"]
     assert new_user_dict["email"] == user_profile["email"]
-
 
     response_logout = client.post("/logout", headers={"token": token})
     assert response_logout.status_code == 200
@@ -72,4 +76,3 @@ def test_habits():
     response_get_habits = client.get("/get_habits", headers={"token": token})
     get_habits_dict = response_get_habits.json()
     assert response_get_habits.status_code == 200
-    

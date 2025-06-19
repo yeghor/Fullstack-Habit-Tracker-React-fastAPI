@@ -11,7 +11,8 @@ from db_utils import (
     get_latest_completion,
     delete_expired_jwts,
     commit
-    )
+)
+
 
 async def reset_all_habits() -> None:
     db: AsyncSession = session_local()
@@ -71,11 +72,13 @@ async def reset_potential_habit() -> None:
         await commit(db)
         await db.close()
 
+
 def to_seconds_from_midnight(UNIX_time) -> int:
     today = datetime.datetime.today().date()
     today_UNIX_midnight = datetime.datetime.combine(today, time()).timestamp()
 
     return UNIX_time - int(today_UNIX_midnight)
+
 
 async def update_jwts():
     db = session_local()

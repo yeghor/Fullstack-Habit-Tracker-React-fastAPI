@@ -37,7 +37,7 @@ limiter = Limiter(key_func=get_remote_address)
 #             if len(timestamps) < max_calls:
 #                 timestamps.append(now)
 #                 return await func(request, *args, **kwargs)
-            
+
 #             wait = round(periods - (now - timestamps[0]))
 #             raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Retry in {wait} seconds")
 #         return wrapper

@@ -4,6 +4,7 @@ from sqlalchemy.orm import DeclarativeBase
 from database import engine
 import asyncio
 
+
 class Base(DeclarativeBase):
     pass
 
@@ -19,8 +20,10 @@ class Users(Base):
     xp = Column(Integer, default=0)
     level = Column(Integer, default=0)
 
-    habits = relationship("Habits", back_populates="owner", cascade="all,delete", lazy="selectin")
-    completions = relationship("HabitCompletions", back_populates="owner", cascade="all,delete", lazy="selectin")
+    habits = relationship("Habits", back_populates="owner",
+                          cascade="all,delete", lazy="selectin")
+    completions = relationship(
+        "HabitCompletions", back_populates="owner", cascade="all,delete", lazy="selectin")
 
 
 class JWTTable(Base):
@@ -42,7 +45,8 @@ class Habits(Base):
     completed = Column(Boolean, default=False)
     reset_at = Column(JSON)
 
-    completions = relationship("HabitCompletions", back_populates="habit", cascade="all,delete", lazy="selectin")
+    completions = relationship(
+        "HabitCompletions", back_populates="habit", cascade="all,delete", lazy="selectin")
     owner = relationship("Users", back_populates="habits", lazy="selectin")
 
 
@@ -56,5 +60,7 @@ class HabitCompletions(Base):
     completed_at = Column(Integer)
     xp_given = Column(Integer)
 
-    owner = relationship("Users", back_populates="completions", lazy="selectin")
-    habit = relationship("Habits", back_populates="completions", lazy="selectin")
+    owner = relationship(
+        "Users", back_populates="completions", lazy="selectin")
+    habit = relationship(
+        "Habits", back_populates="completions", lazy="selectin")
