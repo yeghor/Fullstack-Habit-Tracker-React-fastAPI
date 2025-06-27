@@ -29,6 +29,7 @@ from user_xp_level_util import get_level_by_xp, get_xp_nedeed_by_level
 from rate_limiter import limiter
 from sqlalchemy import select, or_
 
+
 auth_router = APIRouter()
 
 # Manualy call await AsyncSession.commit()!

@@ -158,9 +158,7 @@ async def delete_existing_token(db: AsyncSession, jwt: str):
         .where(JWTTable.jwt_token == jwt)
     )
 
-# Don't use async error handler decorator. Decause AsyncSession.add() is syn method
-
-
+# Don't use async error handler decorator. Decause AsyncSession.add() is synс method ( Requires commit() )
 def construct_and_add_model_to_database(db: AsyncSession, Model: DeclarativeBase, **kwargs) -> DeclarativeBase:
     model_to_add = Model(**kwargs)
     db.add(model_to_add)
