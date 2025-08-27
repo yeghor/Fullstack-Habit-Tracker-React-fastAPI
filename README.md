@@ -34,47 +34,30 @@ A full-stack habit tracking app with user authentication and XP/level progressio
 - Color theme persistence (stored in localStorage)
 
 ---
+## Issues
+Bad. Like Really terrible request response error handling.
 
-##  Installation
+For example: you can get Internal Server Error on API response status code 400 _(bad request)_
 
-> Requires: **Python 3.10+**, **Node.js 16+**
+Soon will be fixed.
 
-## **Instaliation**
+---
+## Usage
 
-#### _Backend_
-1. Create venv and activate it:
+> Requires: **Python 3.10+**, **Node.js 16+**, **Docker**
+
+Clone the repository:
 ```bash
-python -m venv venv
-source venv/bin/activate  # or .\venv\Scripts\activate on Windows
+git clone https://github.com/yeghor/Fullstack-Habit-Tracker-React-fastAPI.git
 ```
 
-2. Install all backend requirements:
+Clone the repository:
 ```bash
-pip install -r requirements.txt
-pip install uvicorn # optional, if not globally installed
-```
-
-3. Execute folowing commands to run the backend API:
-```bash
-cd BACKEND-fastAPI
-uvicorn main:app --reload # run backend
-```
-
-#### _Frontend_
-
-1. Move to frontend app directory and install all packages:
-```bash
-cd frontend-react-app
-npm i # or yarn
-```
-
-2. Execute folowind commands to open application page on your main browser:
-```bash
-npm start # move to app directory if needed
+docker compose up
 ```
 
 #### _Access_
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000 (fastAPI default)
+- Frontend: http://0.0.0.0:3000
+- Backend: http://0.0.0.0:8000 (fastAPI default)
 
-## **Happy application testing and building your own habtits!**
+## **Happy application testing and building your own habits!**

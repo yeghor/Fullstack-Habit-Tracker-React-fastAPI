@@ -3,14 +3,12 @@ services:
     restart: always
     build: BACKEND-fastAPI/
     volumes:
-        - /BACKEND-fastAPI:/back_app
+        - ./BACKEND-fastAPI/database.db:/back_app/database.db
     ports:
       - "8000:8000"
 
   frontend:
     restart: always
     build: frontend-react-app/
-    volumes:
-      - /frontend-react-app:/front_app
     ports:
       - "3000:3000"
