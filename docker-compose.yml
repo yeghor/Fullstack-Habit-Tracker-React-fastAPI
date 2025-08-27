@@ -3,7 +3,7 @@ services:
     restart: always
     build: BACKEND-fastAPI/
     volumes:
-        - C:\Users\Yehor\Documents\Habit Tracker\BACKEND-fastAPI:/back_app
+        - /BACKEND-fastAPI:/back_app
     ports:
       - "8000:8000"
 
@@ -11,6 +11,6 @@ services:
     restart: always
     build: frontend-react-app/
     volumes:
-      - C:\Users\Yehor\Documents\Habit Tracker\frontend-react-app:/front_app
+      - /frontend-react-app:/front_app
     ports:
       - "3000:3000"
